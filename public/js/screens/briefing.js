@@ -1,0 +1,104 @@
+import { navigateTo } from '../app.js';
+import { typewriterEffect } from '../components/terminal.js';
+import { renderConfidenceSlider } from '../components/confidence.js';
+import { renderPatientSprite } from '../components/patient-sprite.js';
+import state from '../state.js';
+
+export function renderBriefing() {
+  const screen = document.createElement('div');
+  const caseData = state.caseData;
+
+  const briefingContainer = document.createElement('div');
+  briefingContainer.className = 'briefing-container';
+
+  // Header
+  const header = document.createElement('div');
+  header.className = 'briefing-header';
+  header.textContent = 'INCOMING CASE TRANSFER';
+  briefingContainer.appendChild(header);
+
+  // Portrait + notes layout
+  const bodyRow = document.createElement('div');
+  bodyRow.className = 'briefing-body';
+
+  // Large patient portrait
+  const sprite = renderPatientSprite(caseData.patient);
+  const spriteImg = sprite.querySelector('img');
+  if (spriteImg) {
+    spriteImg.classList.add('sprite-img-portrait', 'sprite-breathing');
+  }
+  sprite.className = 'briefing-portrait';
+  bodyRow.appendChild(sprite);
+
+  // Right side: context + notes
+  const rightSide = document.createElement('div');
+  rightSide.className = 'briefing-right';
+  bodyRow.appendChild(rightSide);
+
+  briefingContainer.appendChild(bodyRow);
+
+  // Context line
+  const context = document.createElement('div');
+  context.className = 'mb-2';
+  context.style.opacity = '0.7';
+  context.style.fontSize = '16px';
+
+  const entryText = {
+    inheriting_case: `You are inheriting this case from ${caseData.previous_doctor.name} (${caseData.previous_doctor.grade}), who has gone off shift. It is now ${caseData.patient.current_time}. Read their notes carefully.`
+  };
+  context.textContent = entryText[caseData.meta.entry_type] || entryText.inheriting_case;
+  rightSide.appendChild(context);
+
+  // Doctor's notes with typewriter effect
+  const notesSection = document.createElement('div');
+  notesSection.className = 'briefing-notes';
+
+  const notesLabel = document.createElement('div');
+  notesLabel.className = 'glow mb-1';
+  notesLabel.style.fontSize = '16px';
+  notesLabel.textContent = `► ${caseData.previous_doctor.name}'s Notes:`;
+  notesSection.appendChild(notesLabel);
+
+  const notesText = document.createElement('div');
+  notesText.className = 'typewriter';
+  notesText.style.marginTop = '8px';
+  notesSection.appendChild(notesText);
+
+  rightSide.appendChild(notesSection);
+
+  // Bottom area for confidence + proceed button
+  const bottomArea = document.createElement('div');
+  bottomArea.className = 'mt-2';
+  bottomArea.style.display = 'none';
+  briefingContainer.appendChild(bottomArea);
+
+  screen.appendChild(briefingContainer);
+
+  // Start typewriter after render
+  setTimeout(async () => {
+    await typewriterEffect(notesText, caseData.previous_doctor.notes, 20);
+
+    // Show confidence slider
+    bottomArea.style.display = 'block';
+
+    const slider = renderConfidenceSlider(
+      "How confident are you in this doctor's assessment?",
+      (value) => {
+        // Replace slider with proceed button
+        bottomArea.innerHTML = '';
+        const proceedBtn = document.createElement('button');
+        proceedBtn.className = 'btn btn-primary';
+        proceedBtn.style.fontSize = '20px';
+        proceedBtn.style.padding = '10px 30px';
+        proceedBtn.textContent = 'OPEN PATIENT RECORD →';
+        proceedBtn.addEventListener('click', () => {
+          navigateTo('ehr');
+        });
+        bottomArea.appendChild(proceedBtn);
+      }
+    );
+    bottomArea.appendChild(slider);
+  }, 300);
+
+  return screen;
+}

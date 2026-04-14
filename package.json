@@ -1,0 +1,19 @@
+{
+  "name": "second-opinion",
+  "version": "1.0.0",
+  "description": "A retro-styled medical diagnosis game — spot the misdiagnosis",
+  "type": "module",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "openai": "^6.34.0"
+  }
+}

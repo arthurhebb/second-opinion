@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(ls -la /Users/arthurhebb/Downloads/*.pdf)",
+      "Bash(ls -la /Users/arthurhebb/Downloads/*.md)",
+      "Bash(npm install:*)",
+      "Bash(timeout 5 node server/index.js)",
+      "Bash(node:*)",
+      "Bash(curl:*)",
+      "WebFetch(domain:www.nice.org.uk)",
+      "Skill(update-config)",
+      "mcp__claude_ai_Google_Drive__search_files",
+      "mcp__claude_ai_Google_Drive__create_file",
+      "Bash(git init:*)",
+      "Bash(gh auth:*)",
+      "Bash(brew install:*)",
+      "Bash(source ~/.config/envman/PATH.env)",
+      "Bash(git add:*)"
+    ]
+  }
+}
