@@ -1,7 +1,7 @@
 import { navigateTo } from '../app.js';
 import { submitVerdict, submitToLeaderboard } from '../api.js';
 import { renderPatientSprite } from '../components/patient-sprite.js';
-import { recordGame } from '../scoreboard.js';
+import { recordGame, getRank } from '../scoreboard.js';
 import { getPlayerName } from '../player.js';
 import { sfxCorrect, sfxWrong, sfxSubmit, sfxStreak } from '../audio.js';
 import { createTimerDisplay, stopTimer, getElapsedFormatted } from '../components/game-timer.js';
@@ -304,15 +304,17 @@ function renderEasyVerdict() {
           <div style="text-align: center; padding: 16px; border: 1px solid var(--green); margin-top: 16px;">
             <div class="glow-strong" style="font-size: 24px; margin-bottom: 8px;">CORRECT</div>
             <div class="glow" style="font-size: 20px; margin-bottom: 6px;">+${gameResult.score} pts${gameResult.streak > 1 ? ` (×${gameResult.streak} streak)` : ''}</div>
-            <div class="text-dim">Solved in ${finalTime}</div>
+            <div class="text-dim" style="margin-bottom: 4px;">Solved in ${finalTime}</div>
+            <div class="text-dim" style="font-size: 14px;">${getRank(gameResult.totalScore).title}${getRank(gameResult.totalScore).nextTitle ? ` — ${getRank(gameResult.totalScore).pointsToNext} pts to ${getRank(gameResult.totalScore).nextTitle}` : ''}</div>
           </div>
         `;
       } else {
         feedbackArea.innerHTML = `
           <div style="text-align: center; padding: 16px; border: 1px solid var(--red); margin-top: 16px;">
             <div style="font-size: 24px; color: var(--red); margin-bottom: 8px;">NOT QUITE</div>
-            <div class="text-dim" style="margin-bottom: 6px;">+${gameResult.score} pts — streak reset</div>
-            <div class="text-dim">Time: ${finalTime} — Let's look at why.</div>
+            <div class="text-dim" style="margin-bottom: 4px;">+${gameResult.score} pts — streak reset</div>
+            <div class="text-dim" style="margin-bottom: 4px;">Time: ${finalTime}</div>
+            <div class="text-dim" style="font-size: 14px;">${getRank(gameResult.totalScore).title}${getRank(gameResult.totalScore).nextTitle ? ` — ${getRank(gameResult.totalScore).pointsToNext} pts to ${getRank(gameResult.totalScore).nextTitle}` : ''}</div>
           </div>
         `;
       }

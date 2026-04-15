@@ -4,6 +4,22 @@ export function renderBloodsTable(results) {
   const container = document.createElement('div');
   container.className = 'panel';
   const isEasy = state.gameMode === 'easy';
+  const mod = state.caseData?.modifier?.id;
+
+  // MODIFIER: missing bloods — hide 2-3 results
+  let filteredResults = { ...results };
+  if (mod === 'missing_bloods') {
+    const keys = Object.keys(filteredResults);
+    const hideCount = Math.min(3, keys.length - 4);
+    const hideIndices = [];
+    while (hideIndices.length < hideCount) {
+      const idx = Math.floor(Math.random() * keys.length);
+      if (!hideIndices.includes(idx)) hideIndices.push(idx);
+    }
+    for (const idx of hideIndices) {
+      filteredResults[keys[idx]] = { value: '—', unit: '', range: '', flag: 'NORMAL', meaning: 'Sample haemolysed — result unavailable', _hidden: true };
+    }
+  }
 
   const header = document.createElement('div');
   header.className = 'panel-header';
@@ -22,7 +38,7 @@ export function renderBloodsTable(results) {
   table.appendChild(thead);
 
   const tbody = document.createElement('tbody');
-  for (const [test, data] of Object.entries(results)) {
+  for (const [test, data] of Object.entries(filteredResults)) {
     const tr = document.createElement('tr');
     const flagClass = data.flag === 'NORMAL' ? 'flag-normal' : 'flag-high';
 

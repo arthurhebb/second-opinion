@@ -38,7 +38,8 @@ const demoCases = [
       grade: 'FY2',
       notes: '72yo female, PMH: T2DM, HTN, recurrent UTIs. Brought in by daughter with confusion and dysuria. O/E: Looks comfortable, mild suprapubic tenderness. Urine dip: nitrites +, leuco ++, blood +. Impression: UTI — likely cause of acute confusion in elderly patient. Given her recurrent UTIs this is a familiar pattern. Started IV co-amoxiclav as per local guidelines (unable to tolerate oral intake). Plan: Continue IV abx, encourage oral fluids, monitor confusion — likely to improve with abx. Bloods sent. Review in AM. Discussed with registrar who agreed with plan.',
       time_seen: '19:45',
-      tone: 'Confident, thorough-sounding, well-structured notes'
+      tone: 'Confident, thorough-sounding, well-structured notes',
+      callback_message: 'Hey, just checking in on Mrs Ellis — I\'m fairly confident it\'s the UTI causing her confusion. She gets them all the time apparently, and this is a familiar pattern for her. I\'ve started IV co-amoxiclav so she should improve by morning. Let me know if you have concerns but I think the plan is solid.'
     },
     observations: {
       sets: [

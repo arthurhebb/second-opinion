@@ -63,41 +63,25 @@ export function renderChatPanel() {
     appendMessage(messages, msg.role === 'user' ? 'You' : 'Patient', msg.content, msg.role === 'user' ? 'user' : 'assistant', spriteUrl);
   }
 
-  // Category buttons (FY1 and SHO only — Registrar gets free text only)
-  const showCategories = difficulty !== 'atypical';
-  const showSuggestions = difficulty === 'classic'; // FY1 only
+  // Category buttons + suggested questions for all difficulties
+  const categoryRow = document.createElement('div');
+  categoryRow.className = 'chat-categories';
 
-  let suggestionsArea = null;
+  const suggestionsArea = document.createElement('div');
+  suggestionsArea.className = 'chat-suggestions';
 
-  if (showCategories) {
-    const categoryRow = document.createElement('div');
-    categoryRow.className = 'chat-categories';
-
-    for (const [key, cat] of Object.entries(CATEGORIES)) {
-      const btn = document.createElement('button');
-      btn.className = 'btn chat-category-btn';
-      btn.textContent = cat.label;
-      btn.addEventListener('click', () => {
-        // Toggle suggestions for FY1
-        if (showSuggestions && suggestionsArea) {
-          renderSuggestions(suggestionsArea, cat.questions, input, sendMessage);
-        } else {
-          // For SHO, just set focus to input with a hint
-          input.placeholder = `Ask about their ${cat.label.toLowerCase()}...`;
-          input.focus();
-        }
-      });
-      categoryRow.appendChild(btn);
-    }
-
-    container.appendChild(categoryRow);
-
-    if (showSuggestions) {
-      suggestionsArea = document.createElement('div');
-      suggestionsArea.className = 'chat-suggestions';
-      container.appendChild(suggestionsArea);
-    }
+  for (const [key, cat] of Object.entries(CATEGORIES)) {
+    const btn = document.createElement('button');
+    btn.className = 'btn chat-category-btn';
+    btn.textContent = cat.label;
+    btn.addEventListener('click', () => {
+      renderSuggestions(suggestionsArea, cat.questions, input, sendMessage);
+    });
+    categoryRow.appendChild(btn);
   }
+
+  container.appendChild(categoryRow);
+  container.appendChild(suggestionsArea);
 
   const inputRow = document.createElement('div');
   inputRow.className = 'chat-input-row';

@@ -1,7 +1,8 @@
 import { navigateTo } from '../app.js';
 import { startCase } from '../api.js';
 import { getPlayerName, setPlayerName, hasPlayerName } from '../player.js';
-import { initAudio, isMuted, toggleMute, sfxClick, sfxDailyChallenge, sfxNavigate } from '../audio.js';
+import { initAudio, isMuted, toggleMute, sfxClick, sfxDailyChallenge, sfxNavigate, sfxTypewriter, sfxResultArrived } from '../audio.js';
+import { getStats, getRank } from '../scoreboard.js';
 import state, { resetState } from '../state.js';
 
 const ASCII_TITLE = `
@@ -90,11 +91,6 @@ export function renderTitle() {
     renderMainMenu(content);
   }
 
-  const credit = document.createElement('div');
-  credit.className = 'text-dim';
-  credit.style.marginTop = '16px';
-  credit.textContent = 'An MBBS SSC Project';
-  screen.appendChild(credit);
 
   // Bottom row: How to Play + Demo
   const helpBtn = document.createElement('button');
@@ -173,12 +169,17 @@ function renderNamePrompt(container) {
 function renderMainMenu(container) {
   container.innerHTML = '';
 
-  // Player greeting
+  // Player greeting with rank
+  const stats = getStats();
+  const rank = getRank(stats.totalScore);
+
   const greeting = document.createElement('div');
-  greeting.className = 'text-dim';
-  greeting.style.cssText = 'font-size: 14px; text-align: center; margin-bottom: 4px; cursor: pointer;';
-  greeting.textContent = `Playing as ${getPlayerName()}`;
+  greeting.style.cssText = 'text-align: center; margin-bottom: 4px; cursor: pointer;';
   greeting.title = 'Click to change name';
+  greeting.innerHTML = `
+    <div class="glow" style="font-size: 16px;">${rank.title}</div>
+    <div class="text-dim" style="font-size: 13px;">${getPlayerName()}${rank.nextTitle ? ` — ${rank.pointsToNext} pts to ${rank.nextTitle}` : ' — Max rank!'}</div>
+  `;
   greeting.addEventListener('click', () => renderNamePrompt(container));
   container.appendChild(greeting);
 
@@ -262,15 +263,70 @@ function renderDifficultyPicker(container) {
   container.appendChild(backBtn);
 }
 
-async function launchCase(btn, gameMode, difficulty, daily = false, demo = false) {
-  const origHTML = btn.innerHTML;
-  btn.disabled = true;
+const LOADING_MESSAGES = [
+  'ACCESSING PATIENT RECORDS',
+  'LOADING CLINICAL DATA',
+  'REVIEWING BLOOD RESULTS',
+  'PULLING IMAGING FROM ARCHIVE',
+  'CROSS-REFERENCING GUIDELINES',
+  'COMPILING CASE FILE',
+  'CONSULTING WITH REGISTRAR',
+  'PREPARING HANDOVER'
+];
 
-  const frames = ['|', '/', '—', '\\'];
-  let i = 0;
-  const spinner = setInterval(() => {
-    btn.innerHTML = `<div style="font-size: 20px;"> GENERATING ${frames[i++ % frames.length]}</div>`;
-  }, 150);
+async function launchCase(btn, gameMode, difficulty, daily = false, demo = false) {
+  // Take over the whole screen with a loading terminal
+  const app = document.getElementById('app');
+  app.innerHTML = '';
+
+  const loadingScreen = document.createElement('div');
+  loadingScreen.className = 'screen screen-no-scroll';
+  loadingScreen.style.cssText = 'justify-content: center; align-items: center;';
+
+  const terminal = document.createElement('div');
+  terminal.className = 'loading-terminal';
+  loadingScreen.appendChild(terminal);
+  app.appendChild(loadingScreen);
+
+  // Start cycling loading messages
+  let msgIndex = 0;
+  let caseReady = false;
+
+  function addLine(text, className = '') {
+    const line = document.createElement('div');
+    line.className = `loading-line ${className}`;
+    line.innerHTML = `> ${text}<span class="loading-dots"></span>`;
+    terminal.appendChild(line);
+    terminal.scrollTop = terminal.scrollHeight;
+    sfxTypewriter();
+  }
+
+  // Show first message immediately
+  addLine(LOADING_MESSAGES[0]);
+  msgIndex = 1;
+
+  // Add a new message every 1.5 seconds
+  const msgInterval = setInterval(() => {
+    if (caseReady) return;
+    // Mark previous line as done
+    const dots = terminal.querySelectorAll('.loading-dots');
+    if (dots.length > 0) {
+      const lastDots = dots[dots.length - 1];
+      lastDots.classList.remove('loading-dots');
+      lastDots.textContent = ' OK';
+      lastDots.className = 'glow';
+    }
+    // Add next message
+    if (msgIndex < LOADING_MESSAGES.length) {
+      addLine(LOADING_MESSAGES[msgIndex]);
+      msgIndex++;
+    } else {
+      // Loop back if still loading
+      msgIndex = 0;
+      addLine(LOADING_MESSAGES[msgIndex]);
+      msgIndex++;
+    }
+  }, 1500);
 
   try {
     resetState();
@@ -278,15 +334,47 @@ async function launchCase(btn, gameMode, difficulty, daily = false, demo = false
     if (daily) state.isDaily = true;
     if (demo) state.isDemo = true;
     const { sessionId, caseData } = await startCase({ mode: demo ? 'demo' : 'live', gameMode, difficulty, daily });
-    clearInterval(spinner);
+
+    caseReady = true;
+    clearInterval(msgInterval);
+
+    // Mark last line as done
+    const dots = terminal.querySelectorAll('.loading-dots');
+    if (dots.length > 0) {
+      const lastDots = dots[dots.length - 1];
+      lastDots.classList.remove('loading-dots');
+      lastDots.textContent = ' OK';
+      lastDots.className = 'glow';
+    }
+
+    // Show ready message
+    const readyLine = document.createElement('div');
+    readyLine.className = 'loading-line loading-ready';
+    readyLine.textContent = '> CASE READY.';
+    terminal.appendChild(readyLine);
+    sfxResultArrived();
+
+    // Brief pause then transition
+    await new Promise(r => setTimeout(r, 600));
+
     state.sessionId = sessionId;
     state.caseData = caseData;
     navigateTo('briefing');
   } catch (err) {
-    clearInterval(spinner);
+    caseReady = true;
+    clearInterval(msgInterval);
     console.error('Failed to start case:', err);
-    btn.innerHTML = '<div style="font-size: 20px;"> ERROR — TRY AGAIN</div>';
-    btn.disabled = false;
-    setTimeout(() => { btn.innerHTML = origHTML; btn.disabled = false; }, 3000);
+
+    const errLine = document.createElement('div');
+    errLine.className = 'loading-line';
+    errLine.style.color = 'var(--red)';
+    errLine.textContent = '> ERROR — CASE GENERATION FAILED';
+    terminal.appendChild(errLine);
+
+    const retryBtn = document.createElement('button');
+    retryBtn.className = 'btn mt-2';
+    retryBtn.textContent = '< BACK TO MENU';
+    retryBtn.addEventListener('click', () => navigateTo('title'));
+    terminal.appendChild(retryBtn);
   }
 }

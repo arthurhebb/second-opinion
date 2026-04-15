@@ -16,9 +16,13 @@ const state = {
 };
 
 import { resetTimer } from './components/game-timer.js';
+import { resetDoctorCallback } from './components/doctor-callback.js';
+import { stopBleeps } from './components/bleeps.js';
 
 export function resetState() {
   resetTimer();
+  resetDoctorCallback();
+  stopBleeps();
   state.sessionId = null;
   state.caseData = null;
   state.conversationHistory = [];

@@ -8,6 +8,28 @@ const DIFFICULTY_MULTIPLIER = {
   atypical: 2       // Registrar
 };
 
+const RANKS = [
+  { threshold: 0,    title: 'First Aider' },
+  { threshold: 100,  title: 'Medical Student' },
+  { threshold: 300,  title: 'FY1' },
+  { threshold: 600,  title: 'FY2' },
+  { threshold: 1000, title: 'SHO' },
+  { threshold: 1500, title: 'Registrar' },
+  { threshold: 2500, title: 'Consultant' },
+  { threshold: 4000, title: 'Professor' },
+];
+
+export function getRank(score) {
+  let rank = RANKS[0];
+  for (const r of RANKS) {
+    if (score >= r.threshold) rank = r;
+  }
+  const idx = RANKS.indexOf(rank);
+  const nextRank = RANKS[idx + 1] || null;
+  const pointsToNext = nextRank ? nextRank.threshold - score : 0;
+  return { title: rank.title, nextTitle: nextRank?.title || null, pointsToNext };
+}
+
 function load() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);

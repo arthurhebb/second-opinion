@@ -8,6 +8,8 @@ import { renderChatPanel } from '../components/chat-panel.js';
 import { renderPatientSprite } from '../components/patient-sprite.js';
 import { sfxInvestigationOrder, sfxResultArrived, sfxNavigate } from '../audio.js';
 import { createTimerDisplay } from '../components/game-timer.js';
+import { scheduleDoctorCallback } from '../components/doctor-callback.js';
+import { startBleeps, stopBleeps } from '../components/bleeps.js';
 
 export function renderEHR() {
   const screen = document.createElement('div');
@@ -15,6 +17,18 @@ export function renderEHR() {
 
   // Timer
   screen.appendChild(createTimerDisplay());
+
+  // Schedule doctor callback and bleeps
+  scheduleDoctorCallback(caseData);
+  startBleeps();
+
+  // Modifier banner
+  if (caseData.modifier) {
+    const modBanner = document.createElement('div');
+    modBanner.className = 'modifier-banner';
+    modBanner.innerHTML = `<span class="modifier-label">${caseData.modifier.label}</span> <span class="text-dim">— ${caseData.modifier.description}</span>`;
+    screen.appendChild(modBanner);
+  }
 
   // Patient banner
   const banner = document.createElement('div');
@@ -116,23 +130,44 @@ const CXR_GUIDE = `How to read this X-ray:
   \u2022 The bottom corners where the lungs meet the diaphragm should be sharp and clear \u2014 if they're blurry, there may be fluid
   \u2022 Look at the edges of the lungs \u2014 you should see faint lines all the way out. If there's a gap with no lines, the lung may have collapsed`;
 
+function getReportedTime() {
+  // Generate a plausible "reported at" time based on current case time
+  const currentTime = state.caseData?.patient?.current_time || '02:15';
+  const [h, m] = currentTime.split(':').map(Number);
+  const mins = m + 5 + Math.floor(Math.random() * 15);
+  const newH = (h + Math.floor(mins / 60)) % 24;
+  const newM = mins % 60;
+  return `${String(newH).padStart(2, '0')}:${String(newM).padStart(2, '0')}`;
+}
+
 function renderInvestigationResult(key, data, resultsArea) {
+  const resultPanel = document.createElement('div');
+  resultPanel.className = 'panel mt-1 investigation-result-panel';
+
+  const headerText = `${data.label} — RESULTS`;
+  const timeText = `Reported at ${data.reportedTime || getReportedTime()}`;
+
   if (key === 'blood_gas' && typeof data.result === 'object') {
-    resultsArea.appendChild(renderABGTable(data.result));
+    resultPanel.innerHTML = `
+      <div class="panel-header">${headerText}</div>
+      <div class="text-dim" style="font-size: 13px; margin-bottom: 8px;">${timeText}</div>
+    `;
+    resultPanel.appendChild(renderABGTable(data.result));
+    resultsArea.appendChild(resultPanel);
   } else if (data.imageUrl) {
-    const resultPanel = document.createElement('div');
-    resultPanel.className = 'panel mt-1';
-    resultPanel.innerHTML = `<div class="panel-header">${data.label}</div>`;
+    resultPanel.innerHTML = `
+      <div class="panel-header">${headerText}</div>
+      <div class="text-dim" style="font-size: 13px; margin-bottom: 8px;">${timeText}</div>
+    `;
 
     const imgContainer = document.createElement('div');
     imgContainer.className = 'xray-viewer';
     const img = document.createElement('img');
     img.src = data.imageUrl;
     img.className = 'xray-image';
-    img.alt = 'Chest X-Ray';
+    img.alt = data.label;
     imgContainer.appendChild(img);
 
-    // FY1/SHO: show full report. Registrar: show reading guide instead.
     const difficulty = state.caseData?.meta?.difficulty?.presentation_clarity;
     const isHard = difficulty === 'atypical';
 
@@ -146,10 +181,9 @@ function renderInvestigationResult(key, data, resultsArea) {
     resultPanel.appendChild(report);
     resultsArea.appendChild(resultPanel);
   } else {
-    const resultPanel = document.createElement('div');
-    resultPanel.className = 'panel mt-1';
     resultPanel.innerHTML = `
-      <div class="panel-header">${data.label}</div>
+      <div class="panel-header">${headerText}</div>
+      <div class="text-dim" style="font-size: 13px; margin-bottom: 8px;">${timeText}</div>
       <div class="notes-viewer">${typeof data.result === 'string' ? data.result : JSON.stringify(data.result, null, 2)}</div>
     `;
     resultsArea.appendChild(resultPanel);
@@ -190,24 +224,23 @@ function renderInvestigationsTab(caseData) {
     btn.textContent = inv.label;
 
     if (state.investigationsOrdered.includes(key)) {
-      btn.classList.add('ordered');
+      btn.classList.add('investigation-complete');
       btn.disabled = true;
-      btn.textContent = `${inv.label} ✓`;
+      btn.innerHTML = `<span class="investigation-btn-label">${inv.label}</span><span class="investigation-btn-status">✓ RESULTS BELOW</span>`;
     }
 
     btn.addEventListener('click', async () => {
       btn.disabled = true;
-      btn.textContent = `${inv.label}...`;
+      btn.classList.add('investigation-processing');
+      btn.innerHTML = `<span class="investigation-btn-label">${inv.label}</span><span class="investigation-btn-status"><span class="loading-dots"></span> PROCESSING</span>`;
       sfxInvestigationOrder();
 
       try {
         const result = await orderInvestigation(state.sessionId, key);
         state.investigationsOrdered.push(key);
-        btn.classList.add('ordered');
-        btn.textContent = `${inv.label} ✓`;
 
         // Build result data immediately
-        const resultData = { label: result.label, result: result.result, imageUrl: null };
+        const resultData = { label: result.label, result: result.result, imageUrl: null, reportedTime: getReportedTime() };
 
         // Fetch X-ray image if applicable
         if (key === 'chest_xray' && caseData.investigations.imaging_category) {
@@ -221,17 +254,24 @@ function renderInvestigationsTab(caseData) {
         // Save to state immediately so tab switches preserve it
         state.investigationResults[key] = resultData;
 
-        // Show results after delay (if still on this tab)
+        // Show results after delay
         setTimeout(() => {
           sfxResultArrived();
-          // Only render if resultsArea is still in the DOM
+
+          // Update button to complete state
+          btn.classList.remove('investigation-processing');
+          btn.classList.add('investigation-complete');
+          btn.innerHTML = `<span class="investigation-btn-label">${inv.label}</span><span class="investigation-btn-status">✓ RESULTS BELOW</span>`;
+
+          // Render if still on this tab
           if (resultsArea.isConnected) {
             renderInvestigationResult(key, resultData, resultsArea);
           }
         }, Math.min(result.delay_ms || 500, 5000));
       } catch (err) {
         console.error('Investigation order failed:', err);
-        btn.textContent = `${inv.label} — ERROR`;
+        btn.classList.remove('investigation-processing');
+        btn.innerHTML = `<span class="investigation-btn-label">${inv.label}</span><span class="investigation-btn-status" style="color: var(--red);">ERROR</span>`;
         btn.disabled = false;
       }
     });

@@ -83,6 +83,39 @@ ${!doctorCorrect ? `- The previous doctor's notes should sound confident and wel
 ${doctorCorrectInstructions}
 ${easyModeInstructions}
 
+## CRITICAL — MAKING THE CASE HARD
+The game is currently too easy. Follow these rules strictly to create genuinely challenging cases:
+
+### Previous Doctor's Notes
+- The notes must be WELL-WRITTEN and THOROUGH — the error is NOT in the quality of the notes, it's in the REASONING
+- The doctor should address the correct findings but INTERPRET them incorrectly
+- Include a plausible explanation for abnormal results that sounds convincing but is wrong
+- Example: "Lactate 3.8 — likely secondary to dehydration and poor oral intake" (sounds reasonable, actually suggests sepsis)
+- The notes should make the player WANT to agree with the doctor
+
+### Blood Results
+- NOT every abnormal result should point to the missed diagnosis — include abnormals that support the WRONG diagnosis too
+- Include at least 2-3 results that are abnormal but genuinely explainable by the doctor's (incorrect) diagnosis
+- The critical result that points to the real diagnosis should be among many abnormals, not the only one
+- Some normal results should also be clinically significant (e.g. normal troponin when PE is the answer)
+
+### Observations
+- Do NOT make a clean linear deterioration — real patients fluctuate
+- Include at least one obs set where things look slightly BETTER before getting worse (this is realistic and misleading)
+- The NEWS2 scores should not all be escalating — one might dip before rising
+- Make the vitals individually ambiguous — e.g. tachycardia could be pain, anxiety, fever, or the actual diagnosis
+
+### Multiple Choice (Easy Mode)
+- ALL four options must be equally plausible and equally detailed
+- The correct answer should NOT be the longest or most specific option
+- At least one distractor should be a condition that ALSO explains most of the abnormal findings
+- The "doctor was right" option should sound genuinely convincing, not like a throwaway
+
+### Red Herrings
+- Red herrings should be ACTIVE — they should have supporting evidence in the bloods/obs, not just be mentioned
+- Past medical history should include conditions that explain some of the findings without being the answer
+- At least one investigation result should actively mislead (e.g. mildly raised troponin in a sepsis case)
+
 ## Difficulty Settings
 - Presentation clarity: ${difficulty.presentation_clarity || 'moderate'}
 - Red herrings: ${difficulty.red_herrings || 1}
@@ -120,7 +153,8 @@ Return ONLY valid JSON matching this exact structure:
     "systems_review": { "reported_by_daughter": "...", "patient_reports": "..." }
   },
   "previous_doctor": {
-    "name": "...", "grade": "...", "notes": "...", "time_seen": "...", "tone": "..."
+    "name": "...", "grade": "...", "notes": "...", "time_seen": "...", "tone": "...",
+    "callback_message": "A short, friendly, confident message from the previous doctor defending their diagnosis. Written casually like a text/bleep message. Should use the exact flawed reasoning that led to their error. 1-3 sentences."
   },
   "observations": {
     "sets": [{ "time": "...", "hr": number, "bp": "...", "temp": number, "rr": number, "spo2": number, "news2": number, "avpu": "..." }]

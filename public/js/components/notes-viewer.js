@@ -18,31 +18,72 @@ function glossarize(el) {
 export function renderNotesViewer(caseData) {
   const container = document.createElement('div');
   container.className = 'flex flex-col gap-2';
+  const mod = caseData.modifier?.id;
 
   // Previous doctor's notes
   const docNotes = document.createElement('div');
   docNotes.className = 'panel';
-  docNotes.innerHTML = `
-    <div class="panel-header">${caseData.previous_doctor.name} (${caseData.previous_doctor.grade}) — ${caseData.previous_doctor.time_seen}</div>
-    <div class="notes-viewer">${caseData.previous_doctor.notes}</div>
-  `;
+
+  let notesText = caseData.previous_doctor.notes;
+
+  // MODIFIER: illegible notes — redact 2-3 sentences
+  if (mod === 'illegible_notes') {
+    const sentences = notesText.split('. ');
+    if (sentences.length > 3) {
+      const redactIndices = [];
+      while (redactIndices.length < Math.min(2, sentences.length - 2)) {
+        const idx = 1 + Math.floor(Math.random() * (sentences.length - 2));
+        if (!redactIndices.includes(idx)) redactIndices.push(idx);
+      }
+      for (const idx of redactIndices) {
+        sentences[idx] = '████████████████████';
+      }
+      notesText = sentences.join('. ');
+    }
+  }
+
+  // MODIFIER: verbal handover — replace with rushed summary
+  if (mod === 'verbal_handover') {
+    docNotes.innerHTML = `
+      <div class="panel-header">Verbal Handover — ${caseData.previous_doctor.name} (${caseData.previous_doctor.grade}) via phone</div>
+      <div class="notes-viewer" style="font-style: italic;">"${notesText}"</div>
+      <div class="text-dim mt-1" style="font-size: 13px;">No written notes available — verbal handover only</div>
+    `;
+  } else {
+    docNotes.innerHTML = `
+      <div class="panel-header">${caseData.previous_doctor.name} (${caseData.previous_doctor.grade}) — ${caseData.previous_doctor.time_seen}</div>
+      <div class="notes-viewer">${notesText}</div>
+    `;
+  }
   container.appendChild(docNotes);
 
   // Patient history
   const history = document.createElement('div');
   history.className = 'panel';
 
-  let historyHTML = `<div class="panel-header">Patient History</div><div class="notes-viewer">`;
-  historyHTML += `<strong>Presenting Complaint:</strong> ${caseData.history.presenting}\n\n`;
-  historyHTML += `<strong>Past Medical History:</strong>\n${caseData.history.past_medical.map(h => '  • ' + h).join('\n')}\n\n`;
-  historyHTML += `<strong>Medications:</strong>\n${caseData.history.medications.map(m => '  • ' + m).join('\n')}\n\n`;
-  historyHTML += `<strong>Allergies:</strong> ${caseData.history.allergies}\n\n`;
-  historyHTML += `<strong>Social History:</strong> ${caseData.history.social}\n\n`;
-  historyHTML += `<strong>Systems Review (daughter):</strong> ${caseData.history.systems_review.reported_by_daughter}\n`;
-  historyHTML += `<strong>Systems Review (patient):</strong> ${caseData.history.systems_review.patient_reports}`;
-  historyHTML += `</div>`;
-
-  history.innerHTML = historyHTML;
+  // MODIFIER: no history — hide patient-reported sections
+  if (mod === 'no_history') {
+    let historyHTML = `<div class="panel-header">Patient History</div><div class="notes-viewer">`;
+    historyHTML += `<strong>Presenting Complaint:</strong> <span class="text-dim">Patient unresponsive on arrival — unable to give history</span>\n\n`;
+    historyHTML += `<strong>Past Medical History:</strong>\n${caseData.history.past_medical.map(h => '  • ' + h).join('\n')}\n\n`;
+    historyHTML += `<strong>Medications:</strong>\n${caseData.history.medications.map(m => '  • ' + m).join('\n')}\n\n`;
+    historyHTML += `<strong>Allergies:</strong> ${caseData.history.allergies}\n\n`;
+    historyHTML += `<strong>Social History:</strong> <span class="text-dim">Unknown — no collateral available</span>\n\n`;
+    historyHTML += `<strong>Systems Review:</strong> <span class="text-dim">Unable to obtain</span>`;
+    historyHTML += `</div>`;
+    history.innerHTML = historyHTML;
+  } else {
+    let historyHTML = `<div class="panel-header">Patient History</div><div class="notes-viewer">`;
+    historyHTML += `<strong>Presenting Complaint:</strong> ${caseData.history.presenting}\n\n`;
+    historyHTML += `<strong>Past Medical History:</strong>\n${caseData.history.past_medical.map(h => '  • ' + h).join('\n')}\n\n`;
+    historyHTML += `<strong>Medications:</strong>\n${caseData.history.medications.map(m => '  • ' + m).join('\n')}\n\n`;
+    historyHTML += `<strong>Allergies:</strong> ${caseData.history.allergies}\n\n`;
+    historyHTML += `<strong>Social History:</strong> ${caseData.history.social}\n\n`;
+    historyHTML += `<strong>Systems Review (daughter):</strong> ${caseData.history.systems_review.reported_by_daughter}\n`;
+    historyHTML += `<strong>Systems Review (patient):</strong> ${caseData.history.systems_review.patient_reports}`;
+    historyHTML += `</div>`;
+    history.innerHTML = historyHTML;
+  }
   container.appendChild(history);
 
   // Available investigations

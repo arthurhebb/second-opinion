@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import demoCases from '../data/demo-cases.js';
 import conditions, { getAllConditions, getCondition, getGuidelineText } from '../data/conditions.js';
 import { generateCase } from '../agents/gamemaster.js';
+import { rollModifier } from '../data/modifiers.js';
 
 const router = Router();
 
@@ -73,17 +74,24 @@ router.post('/start', async (req, res) => {
     fullCase = demoCases[0];
   }
 
+  // Roll for a modifier
+  const modifier = rollModifier(req.body.daily || false);
+
   sessions.set(sessionId, {
     fullCase,
     conversationHistory: [],
     investigationsOrdered: [],
     verdictSubmitted: false,
-    easyMode: isEasyMode
+    easyMode: isEasyMode,
+    modifier
   });
+
+  const clientCase = filterCaseForClient(fullCase);
+  if (modifier) clientCase.modifier = { id: modifier.id, label: modifier.label, description: modifier.description };
 
   res.json({
     sessionId,
-    caseData: filterCaseForClient(fullCase)
+    caseData: clientCase
   });
 });
 

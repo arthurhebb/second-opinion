@@ -1,5 +1,5 @@
 import { navigateTo } from '../app.js';
-import { getStats, resetScoreboard } from '../scoreboard.js';
+import { getStats, resetScoreboard, getRank } from '../scoreboard.js';
 import { getLeaderboard, getAnalytics } from '../api.js';
 import { getPlayerName } from '../player.js';
 
@@ -105,9 +105,21 @@ export function renderStats() {
 // === YOUR STATS RENDERERS ===
 
 function renderTopStats(stats) {
+  const rank = getRank(stats.totalScore);
   const section = document.createElement('div');
-  section.className = 'stats-top-row';
-  section.innerHTML = `
+
+  // Rank display
+  const rankDisplay = document.createElement('div');
+  rankDisplay.style.cssText = 'text-align: center; margin-bottom: 16px;';
+  rankDisplay.innerHTML = `
+    <div class="glow-strong" style="font-size: 26px; letter-spacing: 2px; text-transform: uppercase;">${rank.title}</div>
+    ${rank.nextTitle ? `<div class="text-dim" style="font-size: 14px; margin-top: 4px;">${rank.pointsToNext} pts to ${rank.nextTitle}</div>` : '<div class="text-amber" style="font-size: 14px; margin-top: 4px;">Max rank achieved</div>'}
+  `;
+  section.appendChild(rankDisplay);
+
+  const statsRow = document.createElement('div');
+  statsRow.className = 'stats-top-row';
+  statsRow.innerHTML = `
     <div class="stat-box">
       <div class="stat-value glow">${stats.totalScore}</div>
       <div class="stat-label">Score</div>
@@ -129,6 +141,7 @@ function renderTopStats(stats) {
       <div class="stat-label">Cases</div>
     </div>
   `;
+  section.appendChild(statsRow);
   return section;
 }
 
@@ -282,10 +295,10 @@ async function loadLeaderboard(section) {
       const rank = i + 1;
       const medal = rank === 1 ? '1st' : rank === 2 ? '2nd' : rank === 3 ? '3rd' : `${rank}th`;
       const accuracy = s.games > 0 ? Math.round((s.correct / s.games) * 100) : 0;
+      const playerRank = getRank(s.totalScore);
       row.innerHTML = `
         <span class="glow" style="min-width: 35px; font-size: 16px;">${medal}</span>
-        <span style="flex: 1; ${isYou ? 'color: var(--green); text-shadow: var(--text-glow);' : ''}">${name}${isYou ? ' (you)' : ''}</span>
-        <span class="text-dim" style="min-width: 60px;">${accuracy}% acc</span>
+        <span style="flex: 1; ${isYou ? 'color: var(--green); text-shadow: var(--text-glow);' : ''}"><span class="text-dim" style="font-size: 12px;">${playerRank.title}</span> ${name}${isYou ? ' (you)' : ''}</span>
         <span class="text-dim" style="min-width: 50px;">${s.games} games</span>
         <span class="glow" style="min-width: 55px; text-align: right;">${s.totalScore}</span>
       `;

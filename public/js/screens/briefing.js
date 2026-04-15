@@ -16,6 +16,14 @@ export function renderBriefing() {
   const briefingContainer = document.createElement('div');
   briefingContainer.className = 'briefing-container';
 
+  // Modifier banner (if active) — placed before the briefing container so it's always visible
+  if (caseData.modifier) {
+    const modBanner = document.createElement('div');
+    modBanner.className = 'modifier-banner mb-1';
+    modBanner.innerHTML = `<span class="modifier-label">${caseData.modifier.label}</span> <span class="text-dim">— ${caseData.modifier.description}</span>`;
+    screen.appendChild(modBanner);
+  }
+
   // Header
   const header = document.createElement('div');
   header.className = 'briefing-header';
@@ -61,7 +69,9 @@ export function renderBriefing() {
   const notesLabel = document.createElement('div');
   notesLabel.className = 'glow mb-1';
   notesLabel.style.fontSize = '16px';
-  notesLabel.textContent = `► ${caseData.previous_doctor.name}'s Notes:`;
+  notesLabel.textContent = mod === 'verbal_handover'
+    ? `► Verbal Handover from ${caseData.previous_doctor.name}:`
+    : `► ${caseData.previous_doctor.name}'s Notes:`;
   notesSection.appendChild(notesLabel);
 
   const notesText = document.createElement('div');
@@ -79,9 +89,30 @@ export function renderBriefing() {
 
   screen.appendChild(briefingContainer);
 
+  // Apply modifier to notes text
+  let doctorNotes = caseData.previous_doctor.notes;
+  const mod = caseData.modifier?.id;
+
+  if (mod === 'illegible_notes') {
+    const sentences = doctorNotes.split('. ');
+    if (sentences.length > 3) {
+      const redactIndices = [];
+      while (redactIndices.length < Math.min(2, sentences.length - 2)) {
+        const idx = 1 + Math.floor(Math.random() * (sentences.length - 2));
+        if (!redactIndices.includes(idx)) redactIndices.push(idx);
+      }
+      for (const idx of redactIndices) {
+        sentences[idx] = '████████████████████';
+      }
+      doctorNotes = sentences.join('. ');
+    }
+  } else if (mod === 'verbal_handover') {
+    doctorNotes = '"' + doctorNotes + '"';
+  }
+
   // Start typewriter after render
   setTimeout(async () => {
-    await typewriterEffect(notesText, caseData.previous_doctor.notes, 20);
+    await typewriterEffect(notesText, doctorNotes, 20);
 
     // Show confidence slider
     bottomArea.style.display = 'block';

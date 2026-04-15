@@ -25,7 +25,12 @@
       "Bash(base=\"/Users/arthurhebb/Downloads/ecg archive/ecg_data_new_version/ecg data new version\" ls \"$base/normal_ecg_images/\")",
       "WebSearch",
       "WebFetch(domain:jsonbin.io)",
-      "Bash(git status:*)"
+      "Bash(git status:*)",
+      "Bash(git push:*)",
+      "Bash(for i:*)",
+      "Bash(do curl:*)",
+      "Bash(python3 -c \":*)",
+      "Bash(/dev/null done:*)"
     ]
   }
 }
