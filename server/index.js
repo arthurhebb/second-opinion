@@ -2,7 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { readFileSync, readdirSync, writeFileSync } from 'fs';
+import { readFileSync, readdirSync } from 'fs';
 import caseRoutes from './routes/case.js';
 import chatRoutes from './routes/chat.js';
 
@@ -39,123 +39,139 @@ app.get('/api/imaging/:type/:category', (req, res) => {
   }
 });
 
-// Global leaderboard — in-memory with periodic file backup
-let leaderboard = [];
-const leaderboardPath = join(__dirname, 'data', 'leaderboard.json');
-try {
-  leaderboard = JSON.parse(readFileSync(leaderboardPath, 'utf-8'));
-} catch { /* first run — empty leaderboard */ }
+// Supabase client for persistent leaderboard
+import { createClient } from '@supabase/supabase-js';
+const supabase = createClient(
+  process.env.SUPABASE_URL || 'https://hgszupfqsnjzemmhipez.supabase.co',
+  process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhnc3p1cGZxc25qemVtbWhpcGV6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNzkwNjAsImV4cCI6MjA5MTg1NTA2MH0.FHdGO9CyuZRT791-Heqkq7oPGzyrsefpqDOZ04r97Xw'
+);
 
-
-app.get('/api/leaderboard', (req, res) => {
-  // Return top 50 sorted by score descending
-  const sorted = [...leaderboard].sort((a, b) => b.score - a.score).slice(0, 50);
-  res.json(sorted);
+// GET leaderboard
+app.get('/api/leaderboard', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('leaderboard')
+      .select('*')
+      .order('score', { ascending: false })
+      .limit(500);
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    console.error('Leaderboard fetch error:', err);
+    res.json([]);
+  }
 });
 
-app.post('/api/leaderboard', (req, res) => {
+// POST to leaderboard
+app.post('/api/leaderboard', async (req, res) => {
   const { name, score, condition, difficulty, daily, correct, bias } = req.body;
   if (!name || typeof score !== 'number') {
     return res.status(400).json({ error: 'Name and score required' });
   }
 
-  const entry = {
-    name: String(name).slice(0, 20),
-    score,
-    condition: condition || 'Unknown',
-    difficulty: difficulty || 'moderate',
-    daily: daily || false,
-    correct: correct || false,
-    bias: bias || null,
-    date: Date.now()
-  };
+  try {
+    const { error } = await supabase.from('leaderboard').insert({
+      name: String(name).slice(0, 20),
+      score,
+      condition: condition || 'Unknown',
+      difficulty: difficulty || 'moderate',
+      daily: daily || false,
+      correct: correct || false,
+      bias: bias || null
+    });
+    if (error) throw error;
 
-  leaderboard.push(entry);
+    // Get rank
+    const { count } = await supabase
+      .from('leaderboard')
+      .select('*', { count: 'exact', head: true });
 
-  // Keep max 500 entries
-  if (leaderboard.length > 500) {
-    leaderboard.sort((a, b) => b.score - a.score);
-    leaderboard = leaderboard.slice(0, 500);
+    const { data: players } = await supabase
+      .from('leaderboard')
+      .select('name');
+
+    const uniquePlayers = new Set((players || []).map(p => p.name)).size;
+    res.json({ rank: 0, totalPlayers: uniquePlayers });
+  } catch (err) {
+    console.error('Leaderboard insert error:', err);
+    res.json({ rank: 0, totalPlayers: 0 });
   }
-
-  // Save to file
-  try { writeFileSync(leaderboardPath, JSON.stringify(leaderboard)); } catch { /* non-critical */ }
-
-  const rank = [...leaderboard].sort((a, b) => b.score - a.score).findIndex(e => e === entry) + 1;
-  res.json({ rank, totalPlayers: new Set(leaderboard.map(e => e.name)).size });
 });
 
-// Analytics endpoint — aggregate stats across all players
-app.get('/api/analytics', (req, res) => {
-  const total = leaderboard.length;
-  if (total === 0) return res.json({ totalGames: 0 });
+// Analytics endpoint — aggregate stats from Supabase
+app.get('/api/analytics', async (req, res) => {
+  try {
+    const { data: all, error } = await supabase
+      .from('leaderboard')
+      .select('*');
+    if (error) throw error;
 
-  const correct = leaderboard.filter(e => e.correct).length;
+    const leaderboard = all || [];
+    const total = leaderboard.length;
+    if (total === 0) return res.json({ totalGames: 0 });
 
-  // Accuracy by condition
-  const byCondition = {};
-  for (const e of leaderboard) {
-    if (!byCondition[e.condition]) byCondition[e.condition] = { total: 0, correct: 0 };
-    byCondition[e.condition].total++;
-    if (e.correct) byCondition[e.condition].correct++;
+    const correctCount = leaderboard.filter(e => e.correct).length;
+
+    // Accuracy by condition
+    const byCondition = {};
+    for (const e of leaderboard) {
+      if (!byCondition[e.condition]) byCondition[e.condition] = { total: 0, correct: 0 };
+      byCondition[e.condition].total++;
+      if (e.correct) byCondition[e.condition].correct++;
+    }
+
+    const conditionStats = Object.entries(byCondition)
+      .map(([name, stats]) => ({ name, ...stats, accuracy: Math.round((stats.correct / stats.total) * 100) }))
+      .sort((a, b) => b.total - a.total);
+
+    // Bias analysis
+    const biasStats = {};
+    for (const e of leaderboard) {
+      if (!e.bias) continue;
+      if (!biasStats[e.bias]) biasStats[e.bias] = { total: 0, fooled: 0 };
+      biasStats[e.bias].total++;
+      if (!e.correct) biasStats[e.bias].fooled++;
+    }
+
+    const biasBreakdown = Object.entries(biasStats)
+      .map(([name, stats]) => ({ name, ...stats, foolRate: Math.round((stats.fooled / stats.total) * 100) }))
+      .sort((a, b) => b.foolRate - a.foolRate);
+
+    // Accuracy by difficulty
+    const byDifficulty = {};
+    for (const e of leaderboard) {
+      const d = e.difficulty || 'moderate';
+      if (!byDifficulty[d]) byDifficulty[d] = { total: 0, correct: 0 };
+      byDifficulty[d].total++;
+      if (e.correct) byDifficulty[d].correct++;
+    }
+
+    const difficultyStats = Object.entries(byDifficulty)
+      .map(([name, stats]) => ({ name, ...stats, accuracy: Math.round((stats.correct / stats.total) * 100) }));
+
+    const dailyGames = leaderboard.filter(e => e.daily);
+    const dailyCorrect = dailyGames.filter(e => e.correct).length;
+    const uniquePlayers = new Set(leaderboard.map(e => e.name)).size;
+    const hardest = conditionStats.filter(c => c.total >= 2).sort((a, b) => a.accuracy - b.accuracy)[0];
+    const deadliestBias = biasBreakdown[0];
+
+    res.json({
+      totalGames: total,
+      totalCorrect: correctCount,
+      globalAccuracy: Math.round((correctCount / total) * 100),
+      uniquePlayers,
+      conditionStats,
+      biasBreakdown,
+      difficultyStats,
+      dailyGames: dailyGames.length,
+      dailyAccuracy: dailyGames.length ? Math.round((dailyCorrect / dailyGames.length) * 100) : 0,
+      hardestCondition: hardest || null,
+      deadliestBias: deadliestBias || null
+    });
+  } catch (err) {
+    console.error('Analytics error:', err);
+    res.json({ totalGames: 0 });
   }
-
-  // Sort by most played
-  const conditionStats = Object.entries(byCondition)
-    .map(([name, stats]) => ({ name, ...stats, accuracy: Math.round((stats.correct / stats.total) * 100) }))
-    .sort((a, b) => b.total - a.total);
-
-  // Bias analysis — how often each bias fools players
-  const biasStats = {};
-  for (const e of leaderboard) {
-    if (!e.bias) continue;
-    if (!biasStats[e.bias]) biasStats[e.bias] = { total: 0, fooled: 0 };
-    biasStats[e.bias].total++;
-    if (!e.correct) biasStats[e.bias].fooled++;
-  }
-
-  const biasBreakdown = Object.entries(biasStats)
-    .map(([name, stats]) => ({ name, ...stats, foolRate: Math.round((stats.fooled / stats.total) * 100) }))
-    .sort((a, b) => b.foolRate - a.foolRate);
-
-  // Accuracy by difficulty
-  const byDifficulty = {};
-  for (const e of leaderboard) {
-    const d = e.difficulty || 'moderate';
-    if (!byDifficulty[d]) byDifficulty[d] = { total: 0, correct: 0 };
-    byDifficulty[d].total++;
-    if (e.correct) byDifficulty[d].correct++;
-  }
-
-  const difficultyStats = Object.entries(byDifficulty)
-    .map(([name, stats]) => ({ name, ...stats, accuracy: Math.round((stats.correct / stats.total) * 100) }));
-
-  // Daily challenge stats
-  const dailyGames = leaderboard.filter(e => e.daily);
-  const dailyCorrect = dailyGames.filter(e => e.correct).length;
-
-  // Unique players
-  const uniquePlayers = new Set(leaderboard.map(e => e.name)).size;
-
-  // Hardest condition (lowest accuracy, min 2 games)
-  const hardest = conditionStats.filter(c => c.total >= 2).sort((a, b) => a.accuracy - b.accuracy)[0];
-
-  // Most dangerous bias
-  const deadliestBias = biasBreakdown[0];
-
-  res.json({
-    totalGames: total,
-    totalCorrect: correct,
-    globalAccuracy: Math.round((correct / total) * 100),
-    uniquePlayers,
-    conditionStats,
-    biasBreakdown,
-    difficultyStats,
-    dailyGames: dailyGames.length,
-    dailyAccuracy: dailyGames.length ? Math.round((dailyCorrect / dailyGames.length) * 100) : 0,
-    hardestCondition: hardest || null,
-    deadliestBias: deadliestBias || null
-  });
 });
 
 app.listen(PORT, () => {
