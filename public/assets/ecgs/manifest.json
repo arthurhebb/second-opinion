@@ -1,0 +1,70 @@
+{
+  "normal": [
+    {
+      "file": "normal/normal_1.jpg"
+    },
+    {
+      "file": "normal/normal_2.jpg"
+    },
+    {
+      "file": "normal/normal_3.jpg"
+    },
+    {
+      "file": "normal/normal_4.jpg"
+    },
+    {
+      "file": "normal/normal_5.jpg"
+    }
+  ],
+  "myocardial_infarction": [
+    {
+      "file": "myocardial_infarction/myocardial_infarction_1.jpg"
+    },
+    {
+      "file": "myocardial_infarction/myocardial_infarction_2.jpg"
+    },
+    {
+      "file": "myocardial_infarction/myocardial_infarction_3.jpg"
+    },
+    {
+      "file": "myocardial_infarction/myocardial_infarction_4.jpg"
+    },
+    {
+      "file": "myocardial_infarction/myocardial_infarction_5.jpg"
+    }
+  ],
+  "abnormal_heartbeat": [
+    {
+      "file": "abnormal_heartbeat/abnormal_heartbeat_1.jpg"
+    },
+    {
+      "file": "abnormal_heartbeat/abnormal_heartbeat_2.jpg"
+    },
+    {
+      "file": "abnormal_heartbeat/abnormal_heartbeat_3.jpg"
+    },
+    {
+      "file": "abnormal_heartbeat/abnormal_heartbeat_4.jpg"
+    },
+    {
+      "file": "abnormal_heartbeat/abnormal_heartbeat_5.jpg"
+    }
+  ],
+  "post_mi_history": [
+    {
+      "file": "post_mi_history/post_mi_history_1.jpg"
+    },
+    {
+      "file": "post_mi_history/post_mi_history_2.jpg"
+    },
+    {
+      "file": "post_mi_history/post_mi_history_3.jpg"
+    },
+    {
+      "file": "post_mi_history/post_mi_history_4.jpg"
+    },
+    {
+      "file": "post_mi_history/post_mi_history_5.jpg"
+    }
+  ]
+}

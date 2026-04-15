@@ -6,8 +6,13 @@
 
 html, body {
   height: 100%;
-  overflow: hidden;
   -webkit-text-size-adjust: 100%;
+  overflow: auto;
+}
+
+#app {
+  min-height: 100vh;
+  overflow: visible;
 }
 
 button {

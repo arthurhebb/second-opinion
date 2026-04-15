@@ -1,0 +1,134 @@
+{
+  "pneumonia": [
+    {
+      "file": "pneumonia/pneumonia_1.jpg",
+      "impression": "no definite signs of pneumonia."
+    },
+    {
+      "file": "pneumonia/pneumonia_2.jpg",
+      "impression": "chronic scoliosis and stable compression fracture of a thoracic vertebra.  otherwise normal chest radiograph. no  evidence pneumonia."
+    },
+    {
+      "file": "pneumonia/pneumonia_3.jpg",
+      "impression": "worsening combination of pleural effusion, pulmonary edema and possibly pneumonia particularly in the right lower lobe.\",  there is no clear radiographic change over the past 11 days.  bilateral pleural effusions moderate on the right small on the le"
+    },
+    {
+      "file": "pneumonia/pneumonia_4.jpg",
+      "impression": "improved pulmonary edema, with improvement of a prior retrocardiac consolidation, suggesting clearing of a prior mucous plug. 1. endotracheal tube tip slightly low lying, terminating approximately 2.3 cm from the carina. 2. 2 enteric tube tips within"
+    },
+    {
+      "file": "pneumonia/pneumonia_5.jpg",
+      "impression": "1.  nasogastric tube below the diaphragm, in the stomach. 2.  persistant right basilar and retrocardiac atelectasis with possible left pleural effusion. new right basilar opacity, which may represent pneumonia in the correct clinical setting.  improv"
+    }
+  ],
+  "pleural_effusion": [
+    {
+      "file": "pleural_effusion/pleural_effusion_1.jpg",
+      "impression": "no previous images.  nasogastric tube extends to the mid body of the stomach, be for coiling on itself so that the tip lies close to the esophagogastric junction.  for more optimal positioning, the to would have to be pulled back almost 10 cm and the"
+    },
+    {
+      "file": "pleural_effusion/pleural_effusion_2.jpg",
+      "impression": "no acute cardiopulmonary process. no acute cardiopulmonary abnormality. status post bypass surgery, pleural scar, no evidence of acute pulmonary infiltrates or pleural effusions in this patient with cough and chills.  no acute intrathoracic process. "
+    },
+    {
+      "file": "pleural_effusion/pleural_effusion_3.jpg",
+      "impression": "in comparison with the study of scratch then no previous images.  low lung volumes accentuate the enlargement of the cardiac silhouette.  indistinctness of engorged pulmonary vessels most likely reflects elevation of pulmonary venous pressure.  no de"
+    },
+    {
+      "file": "pleural_effusion/pleural_effusion_4.jpg",
+      "impression": "1. widened mediastinum may reflect low lung volumes and supine positioning, however mediastinal great vessel injury cannot be excluded. if concern exists, recommend chest cta. 2. pulmonary vascular congestion and probable mild pulmonary edema. 3. bib"
+    },
+    {
+      "file": "pleural_effusion/pleural_effusion_5.jpg",
+      "impression": "pa and lateral chest reviewed in the absence of prior chest imaging:  moderate bilateral pleural effusions layer dependently.  cardiac silhouette has a peculiar shape, and a larger than expected component to the right of midline.  whether this is due"
+    }
+  ],
+  "pneumothorax": [
+    {
+      "file": "pneumothorax/pneumothorax_1.jpg",
+      "impression": "stable radiographic appearance of the chest, with no evidence of congestive heart failure. stable cardiomegaly with interval decrease in pulmonary edema.  no significant interval change. status post median sternotomy with overall stable postoperative"
+    },
+    {
+      "file": "pneumothorax/pneumothorax_2.jpg",
+      "impression": "no rib fracture or pneumothorax.  dedicated rib films at the site of pain and can be done to better assess for fracture. pacemaker leads terminate in right atrium and right ventricle.  heart size and mediastinum are stable.  bilateral basal interstit"
+    },
+    {
+      "file": "pneumothorax/pneumothorax_3.jpg",
+      "impression": "heart size is top-normal.  hiatal hernia is present, moderate, unchanged. lungs are essentially clear. there is no pleural effusion or pneumothorax. there is no evidence of pneumonia. hiatal hernia. otherwise, unremarkable chest radiographic examinat"
+    },
+    {
+      "file": "pneumothorax/pneumothorax_4.jpg",
+      "impression": "1.  probable small right apical pneumothorax. repeat chest radiograph is recommended to exclude enlarging pneumothorax. 2.  bibasilar patchy and linear opacities, which may be secondary to atelectasis, pneumonia, or aspiration. adjacent small pleural"
+    },
+    {
+      "file": "pneumothorax/pneumothorax_5.jpg",
+      "impression": "in comparison with the study of ___, there is little change in the degree of left apical pneumothorax with pigtail catheter remaining in place.  otherwise, little change. there is a stable moderate left apical pneumothorax with a loculated basilar hy"
+    }
+  ],
+  "pulmonary_oedema": [
+    {
+      "file": "pulmonary_oedema/pulmonary_oedema_1.jpg",
+      "impression": "mild perihilar prominence, suspected to represent mildly prominent pulmonary vessels without definite pneumonia.  streaky left basilar opacification seen only on the frontal view is probably due to minor atelectasis or scarring. mild pulmonary edema"
+    },
+    {
+      "file": "pulmonary_oedema/pulmonary_oedema_2.jpg",
+      "impression": "findings are suggestive of pulmonary edema.  persisting right infrahilar opacity. moderate bilateral pleural effusions with overlying atelectasis.  pulmonary edema.  cardiomegaly.  constellation of findings suggest chf.  right infrahilar opacity may "
+    },
+    {
+      "file": "pulmonary_oedema/pulmonary_oedema_3.jpg",
+      "impression": "right costophrenic angle not fully included on the image.  top normal cardiac silhouette without pleural effusion or pulmonary edema.  no focal consolidation."
+    },
+    {
+      "file": "pulmonary_oedema/pulmonary_oedema_4.jpg",
+      "impression": "slight prominence of the hila suggest pulmonary vascular engorgement without overt pulmonary edema.  basilar atelectasis without definite focal consolidation. in comparison with the study of ___, the cardiac silhouette remains at the upper limits of "
+    },
+    {
+      "file": "pulmonary_oedema/pulmonary_oedema_5.jpg",
+      "impression": "1.  a left-sided pacemaker remains in place.  a right subclavian picc line is unchanged.  the right internal jugular swan-ganz catheter continues to be in the right pulmonary artery with the tip somewhat distal and a pullback of 3-4 cm has been previ"
+    }
+  ],
+  "cardiomegaly": [
+    {
+      "file": "cardiomegaly/cardiomegaly_1.jpg",
+      "impression": "compared to chest radiographs since ___, most recently one ___.  previous mild pulmonary edema and possible concurrent pneumonia has all cleared.  heart is top-normal size, improved, and pleural effusions have resolved.  right hilar vessels are still"
+    },
+    {
+      "file": "cardiomegaly/cardiomegaly_2.jpg",
+      "impression": "no acute cardiopulmonary process. the endotracheal tube tip is 6 cm above the carina.  nasogastric tube tip is beyond the ge junction and off the edge of the film.  a left central line is present in the tip is in the mid svc.  a pacemaker is noted on"
+    },
+    {
+      "file": "cardiomegaly/cardiomegaly_3.jpg",
+      "impression": "moderate cardiomegaly and mild pulmonary vascular congestion but no edema.  possible tiny small pleural effusions.  no focal consolidation. unchanged, mild to moderate cardiomegaly without a superimposed acute intrathoracic process."
+    },
+    {
+      "file": "cardiomegaly/cardiomegaly_4.jpg",
+      "impression": "mild to moderate left pleural effusion is decreased in size from the prior exam has as is adjacent left basal atelectasis. no evidence of pneumothorax. ap chest compared to ___:  large scale consolidation in both lower lungs developed between ___, mo"
+    },
+    {
+      "file": "cardiomegaly/cardiomegaly_5.jpg",
+      "impression": "interval decrease in size of small bilateral pleural effusions.\",  there has been worsening of the areas of consolidation and interstitial prominence throughout both lung fields. there are more confluent areas of consolidation in the perihilar region"
+    }
+  ],
+  "normal": [
+    {
+      "file": "normal/normal_1.jpg",
+      "impression": "no acute cardiopulmonary process. no acute cardiopulmonary abnormality. no acute intrathoracic process. no acute cardiopulmonary process."
+    },
+    {
+      "file": "normal/normal_2.jpg",
+      "impression": "no acute intrathoracic process. no evidence of acute cardiopulmonary process."
+    },
+    {
+      "file": "normal/normal_3.jpg",
+      "impression": "no acute intrathoracic process."
+    },
+    {
+      "file": "normal/normal_4.jpg",
+      "impression": "mild left base atelectasis.  otherwise, no acute cardiopulmonary process."
+    },
+    {
+      "file": "normal/normal_5.jpg",
+      "impression": "no acute cardiopulmonary process."
+    }
+  ]
+}

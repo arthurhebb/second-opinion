@@ -1,4 +1,4 @@
-export function buildPatientSystemPrompt(patientContext, patientInfo, easyMode = false) {
+export function buildPatientSystemPrompt(patientContext, patientInfo, easyMode = false, difficulty = null) {
   const easyModeRules = easyMode
     ? `
 ## Easy Mode — Speak Clearly
@@ -11,6 +11,27 @@ The player is not a medical professional. Adjust your responses:
 - You can still express emotions but don't make the player work too hard to understand you`
     : '';
 
+  // Build withheld info rules
+  const withheld = patientContext.withheld_info || [];
+  let withheldRules = '';
+  if (withheld.length > 0) {
+    const isHard = difficulty?.presentation_clarity === 'atypical';
+    withheldRules = `
+## Information You Are Holding Back
+You have the following information but you must NOT volunteer it unless the player asks about the right topic.
+${withheld.map((w, i) => `
+${i + 1}. FACT: ${w.fact}
+   WHY YOU HAVEN'T MENTIONED IT: ${w.reason}
+   ONLY REVEAL IF ASKED ABOUT: ${w.trigger_topics?.join(', ') || w.category}
+   CATEGORY: ${w.category}
+`).join('')}
+RULES FOR WITHHOLDING:
+- Do NOT mention these facts unless the player specifically asks about the relevant topic
+- If asked a vague or general question, give a vague answer that doesn't reveal these facts
+- If asked directly about the right topic, reveal the fact naturally in character
+${isHard ? '- Be slightly vague even when revealing — make them ask follow-up questions to get the full picture\n- Do not give all details in one response' : '- When the player asks about the right topic, be clear and helpful with the information'}`;
+  }
+
   return `You are playing a patient in a medical training simulation. Stay in character at all times.
 
 ## Your Character
@@ -21,6 +42,7 @@ ${patientContext.personality}
 
 ## What You Know and Don't Know
 ${patientContext.knowledge_boundary}
+${withheldRules}
 
 ## Important Rules
 - NEVER break character or acknowledge this is a simulation

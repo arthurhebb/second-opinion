@@ -37,10 +37,19 @@ router.post('/start', async (req, res) => {
   if (mode === 'live') {
     // Live generation via Game Master agent
     try {
-      // Pick a random condition if none specified
+      // Pick condition — daily challenge uses date-seeded selection
       let condition;
       if (conditionId) {
         condition = getCondition(conditionId);
+      } else if (req.body.daily) {
+        // Same condition for everyone on the same day
+        const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+        let hash = 0;
+        for (let i = 0; i < today.length; i++) {
+          hash = ((hash << 5) - hash) + today.charCodeAt(i);
+          hash |= 0;
+        }
+        condition = conditions[Math.abs(hash) % conditions.length];
       } else {
         condition = conditions[Math.floor(Math.random() * conditions.length)];
       }
@@ -152,6 +161,7 @@ router.post('/:sessionId/verdict', (req, res) => {
     playerVerdict: { diagnosis, missed, confidence },
     reveal: session.fullCase.hidden,
     guideline_reference: session.fullCase.meta?.guideline_reference || '',
+    withheld_info: session.fullCase.patient_agent_context?.withheld_info || [],
     selectedCorrect,
     correctOptionId
   });

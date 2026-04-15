@@ -8,7 +8,8 @@ export async function streamPatientResponse(session, userMessage) {
   const systemPrompt = buildPatientSystemPrompt(
     fullCase.patient_agent_context,
     fullCase.patient,
-    easyMode
+    easyMode,
+    fullCase.meta?.difficulty
   );
 
   // Add user message to history

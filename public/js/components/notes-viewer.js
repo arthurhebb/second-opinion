@@ -1,3 +1,20 @@
+import { highlightTerms } from './glossary.js';
+import state from '../state.js';
+
+function glossarize(el) {
+  if (state.gameMode !== 'easy') return;
+  // Walk text nodes and highlight glossary terms
+  const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+  const textNodes = [];
+  while (walker.nextNode()) textNodes.push(walker.currentNode);
+
+  for (const node of textNodes) {
+    if (!node.textContent.trim()) continue;
+    const frag = highlightTerms(node.textContent);
+    node.parentNode.replaceChild(frag, node);
+  }
+}
+
 export function renderNotesViewer(caseData) {
   const container = document.createElement('div');
   container.className = 'flex flex-col gap-2';
@@ -37,7 +54,49 @@ export function renderNotesViewer(caseData) {
   availHTML += `<strong>Blood Cultures:</strong> ${caseData.investigations.blood_cultures.status}`;
   availHTML += `</div>`;
   avail.innerHTML = availHTML;
+
+  // Show ECG image if category is specified
+  const ecgCat = caseData.investigations.ecg_category;
+  if (ecgCat) {
+    // ECG interpretation hint (all difficulties)
+    const ecgHints = {
+      normal: 'This ECG looks normal — regular rhythm, no obvious abnormalities.',
+      myocardial_infarction: 'This ECG shows changes that could indicate damage to the heart muscle — look at the ST segments (the flat bits between the spikes). If they\'re raised or lowered compared to normal, that suggests a heart attack may be happening or has recently happened.',
+      abnormal_heartbeat: 'This ECG shows an irregular or abnormal heart rhythm. The pattern between beats isn\'t consistent, which could mean the heart\'s electrical system isn\'t firing normally. This might be atrial fibrillation, a fast heart rate, or another rhythm problem.',
+      post_mi_history: 'This ECG shows some older changes that suggest the heart was damaged at some point in the past — possibly a previous heart attack. Look for deep Q waves (downward dips at the start of each beat) or inverted T waves (upside-down bumps). These are scars, not necessarily a new problem.'
+    };
+
+    const hintEl = document.createElement('div');
+    hintEl.className = 'imaging-hint mt-1';
+    hintEl.textContent = ecgHints[ecgCat] || '';
+    avail.appendChild(hintEl);
+
+    const ecgViewer = document.createElement('div');
+    ecgViewer.className = 'xray-viewer mt-1';
+    ecgViewer.innerHTML = '<div class="text-dim" style="padding: 12px;">Loading ECG...</div>';
+    avail.appendChild(ecgViewer);
+
+    fetch(`/api/imaging/ecg/${ecgCat}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.url) {
+          ecgViewer.innerHTML = '';
+          const img = document.createElement('img');
+          img.src = data.url;
+          img.className = 'xray-image';
+          img.alt = 'ECG';
+          ecgViewer.appendChild(img);
+        } else {
+          ecgViewer.innerHTML = '';
+        }
+      })
+      .catch(() => { ecgViewer.innerHTML = ''; });
+  }
+
   container.appendChild(avail);
+
+  // Highlight glossary terms in easy mode
+  glossarize(container);
 
   return container;
 }

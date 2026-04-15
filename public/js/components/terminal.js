@@ -1,3 +1,5 @@
+import { sfxTypewriter } from '../audio.js';
+
 export function typewriterEffect(element, text, speed = 25) {
   return new Promise((resolve) => {
     let i = 0;
@@ -8,6 +10,8 @@ export function typewriterEffect(element, text, speed = 25) {
     function type() {
       if (i < text.length) {
         element.insertBefore(document.createTextNode(text[i]), cursor);
+        // Play click sound every few characters (not every one — too noisy)
+        if (i % 3 === 0) sfxTypewriter();
         i++;
         setTimeout(type, speed);
       } else {

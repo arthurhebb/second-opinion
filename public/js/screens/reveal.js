@@ -1,4 +1,5 @@
 import { navigateTo } from '../app.js';
+import { highlightTerms } from '../components/glossary.js';
 import state, { resetState } from '../state.js';
 
 export function renderReveal() {
@@ -120,6 +121,23 @@ export function renderReveal() {
     container.appendChild(rhSection);
   }
 
+  // Withheld information
+  const withheld = state.withheldInfo || [];
+  if (withheld.length > 0) {
+    const withheldSection = document.createElement('div');
+    withheldSection.className = 'reveal-section';
+    withheldSection.style.borderColor = 'var(--amber)';
+    withheldSection.innerHTML = `<h3 style="color: var(--amber);">What the Patient Didn't Tell You</h3>`;
+    for (const w of withheld) {
+      const item = document.createElement('div');
+      item.className = 'teaching-point';
+      item.style.borderLeftColor = 'var(--amber)';
+      item.innerHTML = `<strong>${w.fact}</strong><br><span class="text-dim" style="font-size: 14px;">Why they didn't mention it: ${w.reason}</span>`;
+      withheldSection.appendChild(item);
+    }
+    container.appendChild(withheldSection);
+  }
+
   // Teaching points
   const teachSection = document.createElement('div');
   teachSection.className = 'reveal-section';
@@ -140,6 +158,20 @@ export function renderReveal() {
     <div class="glow">${state.guidelineReference || 'See NICE guidelines'}</div>
   `;
   container.appendChild(guideRef);
+
+  // Highlight glossary terms in easy mode
+  if (state.gameMode === 'easy') {
+    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
+    const textNodes = [];
+    while (walker.nextNode()) textNodes.push(walker.currentNode);
+    for (const node of textNodes) {
+      if (!node.textContent.trim()) continue;
+      // Skip button text and headers
+      if (node.parentNode.tagName === 'BUTTON' || node.parentNode.tagName === 'H2') continue;
+      const frag = highlightTerms(node.textContent);
+      node.parentNode.replaceChild(frag, node);
+    }
+  }
 
   // Play again
   const playAgain = document.createElement('button');

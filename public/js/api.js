@@ -1,5 +1,14 @@
 const API_BASE = '/api';
 
+let glossaryCache = null;
+
+export async function getGlossary() {
+  if (glossaryCache) return glossaryCache;
+  const res = await fetch(`${API_BASE}/glossary`);
+  glossaryCache = await res.json();
+  return glossaryCache;
+}
+
 export async function getConditions() {
   const res = await fetch(`${API_BASE}/case/conditions`);
   return res.json();
@@ -33,6 +42,25 @@ export async function submitVerdict(sessionId, verdict) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(verdict)
   });
+  return res.json();
+}
+
+export async function getLeaderboard() {
+  const res = await fetch(`${API_BASE}/leaderboard`);
+  return res.json();
+}
+
+export async function submitToLeaderboard({ name, score, condition, difficulty, daily, correct, bias }) {
+  const res = await fetch(`${API_BASE}/leaderboard`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, score, condition, difficulty, daily, correct, bias })
+  });
+  return res.json();
+}
+
+export async function getAnalytics() {
+  const res = await fetch(`${API_BASE}/analytics`);
   return res.json();
 }
 

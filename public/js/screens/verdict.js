@@ -1,6 +1,10 @@
 import { navigateTo } from '../app.js';
-import { submitVerdict } from '../api.js';
+import { submitVerdict, submitToLeaderboard } from '../api.js';
 import { renderPatientSprite } from '../components/patient-sprite.js';
+import { recordGame } from '../scoreboard.js';
+import { getPlayerName } from '../player.js';
+import { sfxCorrect, sfxWrong, sfxSubmit, sfxStreak } from '../audio.js';
+import { createTimerDisplay, stopTimer, getElapsedFormatted } from '../components/game-timer.js';
 import state, { addConfidenceRating } from '../state.js';
 
 export function renderVerdict() {
@@ -88,6 +92,10 @@ function renderMedicalVerdict() {
   const confGroup = document.createElement('div');
   confGroup.className = 'form-group';
   confGroup.innerHTML = `<label>How confident are you in your assessment?</label>`;
+  const confWarning1 = document.createElement('div');
+  confWarning1.className = 'confidence-warning';
+  confWarning1.textContent = 'Choose carefully — confidence counts. Get it right and your conviction is rewarded. Get it wrong, and overconfidence will cost you.';
+  confGroup.appendChild(confWarning1);
   const sliderRow = document.createElement('div');
   sliderRow.className = 'slider-container';
   const slider = document.createElement('input');
@@ -114,13 +122,6 @@ function renderMedicalVerdict() {
   }));
   form.appendChild(submitBtn);
 
-  const backBtn = document.createElement('button');
-  backBtn.className = 'btn text-dim';
-  backBtn.style.alignSelf = 'center';
-  backBtn.textContent = '← BACK TO RECORD';
-  backBtn.addEventListener('click', () => navigateTo('ehr'));
-  form.appendChild(backBtn);
-
   screen.appendChild(form);
   return screen;
 }
@@ -133,6 +134,8 @@ function renderEasyVerdict() {
   screen.style.alignItems = 'flex-start';
   screen.style.overflow = 'auto';
   screen.style.padding = '20px 0';
+
+  screen.appendChild(createTimerDisplay());
 
   const form = document.createElement('div');
   form.className = 'verdict-form';
@@ -182,6 +185,10 @@ function renderEasyVerdict() {
   const confGroup = document.createElement('div');
   confGroup.className = 'form-group mt-2';
   confGroup.innerHTML = `<label>How confident are you?</label>`;
+  const confWarning2 = document.createElement('div');
+  confWarning2.className = 'confidence-warning';
+  confWarning2.textContent = 'Choose carefully — confidence counts. Get it right and your conviction is rewarded. Get it wrong, and overconfidence will cost you.';
+  confGroup.appendChild(confWarning2);
   const sliderRow = document.createElement('div');
   sliderRow.className = 'slider-container';
   const slider = document.createElement('input');
@@ -207,6 +214,9 @@ function renderEasyVerdict() {
       return;
     }
 
+    sfxSubmit();
+    const finalTime = getElapsedFormatted();
+    stopTimer();
     submitBtn.textContent = 'SUBMITTING...';
     submitBtn.disabled = true;
 
@@ -225,9 +235,39 @@ function renderEasyVerdict() {
       state.playerVerdict = result.playerVerdict;
       state.revealData = result.reveal;
       state.guidelineReference = result.guideline_reference;
+      state.withheldInfo = result.withheld_info || [];
 
       // Show inline feedback
       const isCorrect = result.selectedCorrect;
+
+      // Record game to scoreboard
+      const briefingConf = state.confidenceRatings.find(r => r.label !== 'Final verdict');
+      const gameResult = recordGame({
+        correct: isCorrect,
+        condition: result.reveal?.actual_diagnosis || state.caseData?.meta?.title || 'Unknown',
+        difficulty: state.caseData?.meta?.difficulty,
+        gameMode: state.gameMode,
+        daily: state.isDaily || false,
+        confidenceBriefing: briefingConf?.value ?? null,
+        confidenceVerdict: parseInt(slider.value),
+        biasPlanted: result.reveal?.cognitive_bias_planted || null,
+        timeTakenMs: state.caseData ? Date.now() - (state.confidenceRatings[0]?.time || Date.now()) : null,
+        selectedCorrect: isCorrect
+      });
+
+      // Submit to global leaderboard
+      const playerName = getPlayerName();
+      if (playerName) {
+        submitToLeaderboard({
+          name: playerName,
+          score: gameResult.score,
+          condition: result.reveal?.actual_diagnosis || 'Unknown',
+          difficulty: state.caseData?.meta?.difficulty?.presentation_clarity || 'moderate',
+          daily: state.isDaily || false,
+          correct: isCorrect,
+          bias: result.reveal?.cognitive_bias_planted || null
+        }).catch(() => { /* non-critical */ });
+      }
 
       // Disable all option buttons and highlight correct/incorrect
       for (const [id, btn] of Object.entries(optionButtons)) {
@@ -249,20 +289,30 @@ function renderEasyVerdict() {
       // Hide confidence slider
       confGroup.style.display = 'none';
 
+      // Sound effects
+      if (isCorrect) {
+        sfxCorrect();
+        if (gameResult.streak >= 3) setTimeout(() => sfxStreak(gameResult.streak), 400);
+      } else {
+        sfxWrong();
+      }
+
       // Show feedback message
       feedbackArea.style.display = 'block';
       if (isCorrect) {
         feedbackArea.innerHTML = `
           <div style="text-align: center; padding: 16px; border: 1px solid var(--green); margin-top: 16px;">
             <div class="glow-strong" style="font-size: 24px; margin-bottom: 8px;">CORRECT</div>
-            <div class="text-dim">Good catch. Let's see the full breakdown.</div>
+            <div class="glow" style="font-size: 20px; margin-bottom: 6px;">+${gameResult.score} pts${gameResult.streak > 1 ? ` (×${gameResult.streak} streak)` : ''}</div>
+            <div class="text-dim">Solved in ${finalTime}</div>
           </div>
         `;
       } else {
         feedbackArea.innerHTML = `
           <div style="text-align: center; padding: 16px; border: 1px solid var(--red); margin-top: 16px;">
             <div style="font-size: 24px; color: var(--red); margin-bottom: 8px;">NOT QUITE</div>
-            <div class="text-dim">The correct answer is highlighted above. Let's look at why.</div>
+            <div class="text-dim" style="margin-bottom: 6px;">+${gameResult.score} pts — streak reset</div>
+            <div class="text-dim">Time: ${finalTime} — Let's look at why.</div>
           </div>
         `;
       }
@@ -283,13 +333,6 @@ function renderEasyVerdict() {
     }
   });
   form.appendChild(submitBtn);
-
-  const backBtn = document.createElement('button');
-  backBtn.className = 'btn text-dim';
-  backBtn.style.alignSelf = 'center';
-  backBtn.textContent = '← BACK TO RECORD';
-  backBtn.addEventListener('click', () => navigateTo('ehr'));
-  form.appendChild(backBtn);
 
   screen.appendChild(form);
   return screen;
@@ -350,6 +393,39 @@ async function doSubmit(btn, verdictData) {
     state.playerVerdict = result.playerVerdict;
     state.revealData = result.reveal;
     state.guidelineReference = result.guideline_reference;
+
+    // Record game for medical mode (correctness is approximate — based on doctor_was_correct match)
+    const reveal = result.reveal;
+    const doctorWasCorrect = reveal?.doctor_was_correct === true;
+    const playerSaidCorrect = verdictData.playerSaysDoctorCorrect === true;
+    const correct = doctorWasCorrect === playerSaidCorrect;
+    const briefingConf = state.confidenceRatings.find(r => r.label !== 'Final verdict');
+    recordGame({
+      correct,
+      condition: reveal?.actual_diagnosis || state.caseData?.meta?.title || 'Unknown',
+      difficulty: state.caseData?.meta?.difficulty,
+      gameMode: state.gameMode,
+      confidenceBriefing: briefingConf?.value ?? null,
+      confidenceVerdict: verdictData.confidence,
+      biasPlanted: reveal?.cognitive_bias_planted || null,
+      timeTakenMs: state.caseData ? Date.now() - (state.confidenceRatings[0]?.time || Date.now()) : null,
+      selectedCorrect: correct
+    });
+
+    // Submit to global leaderboard
+    const playerNameMed = getPlayerName();
+    if (playerNameMed) {
+      submitToLeaderboard({
+        name: playerNameMed,
+        score: 0,
+        condition: reveal?.actual_diagnosis || 'Unknown',
+        difficulty: state.caseData?.meta?.difficulty?.presentation_clarity || 'moderate',
+        daily: state.isDaily || false,
+        correct,
+        bias: reveal?.cognitive_bias_planted || null
+      }).catch(() => {});
+    }
+
     navigateTo('reveal');
   } catch (err) {
     console.error('Verdict submission failed:', err);

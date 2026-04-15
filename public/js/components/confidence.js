@@ -9,6 +9,12 @@ export function renderConfidenceSlider(label, onSubmit) {
   question.textContent = label;
   container.appendChild(question);
 
+  // Warning text
+  const warning = document.createElement('div');
+  warning.className = 'confidence-warning';
+  warning.textContent = 'Choose carefully — confidence counts. Get it right and your conviction is rewarded. Get it wrong, and overconfidence will cost you.';
+  container.appendChild(warning);
+
   const sliderRow = document.createElement('div');
   sliderRow.className = 'slider-container';
 

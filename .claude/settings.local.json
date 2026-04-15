@@ -16,7 +16,16 @@
       "Bash(gh auth:*)",
       "Bash(brew install:*)",
       "Bash(source ~/.config/envman/PATH.env)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(gh repo:*)",
+      "Bash(npm run:*)",
+      "Bash(python3:*)",
+      "Bash(pkill -f \"node.*server/index.js\")",
+      "Bash(base=\"/Users/arthurhebb/Downloads/ecg archive/ecg_data_new_version/ecg data new version\" ls \"$base/normal_ecg_images/\")",
+      "WebSearch",
+      "WebFetch(domain:jsonbin.io)",
+      "Bash(git status:*)"
     ]
   }
 }

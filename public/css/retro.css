@@ -25,10 +25,9 @@ html, body {
 }
 
 #app {
-  height: 100vh;
+  min-height: 100vh;
   width: 100vw;
   position: relative;
-  overflow: hidden;
 }
 
 /* Scanline overlay */
@@ -69,11 +68,17 @@ html, body {
 
 /* Screen container */
 .screen {
-  height: 100vh;
-  width: 100vw;
+  min-height: 100vh;
+  width: 100%;
   display: flex;
   flex-direction: column;
   padding: 20px;
+}
+
+.screen-no-scroll {
+  height: 100vh;
+  min-height: 100vh;
+  max-height: 100vh;
   overflow: hidden;
 }
 
@@ -244,6 +249,7 @@ html, body {
   align-items: center;
   gap: 12px;
   margin: 12px 0;
+  max-width: 500px;
 }
 
 .slider {
@@ -288,14 +294,49 @@ html, body {
   border: 1px solid var(--green-faint);
 }
 
-/* Fade in animation */
+/* Screen transitions */
 .fade-in {
-  animation: fadeIn 0.5s ease-in;
+  animation: fadeIn 0.3s ease-in;
+}
+
+.fade-out {
+  animation: fadeOut 0.25s ease-out forwards;
 }
 
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* Glitch transition for reveal screen */
+.glitch-out {
+  animation: glitchOut 0.3s ease-in forwards;
+}
+
+.glitch-in {
+  animation: glitchIn 0.4s ease-out;
+}
+
+@keyframes glitchOut {
+  0% { opacity: 1; filter: none; }
+  20% { opacity: 1; transform: translateX(-3px); filter: hue-rotate(90deg); }
+  40% { opacity: 1; transform: translateX(5px) skewX(2deg); filter: hue-rotate(-90deg); }
+  60% { opacity: 0.8; transform: translateX(-2px) skewX(-1deg); clip-path: inset(20% 0 30% 0); }
+  80% { opacity: 0.4; transform: translateX(4px); clip-path: inset(50% 0 10% 0); }
+  100% { opacity: 0; }
+}
+
+@keyframes glitchIn {
+  0% { opacity: 0; transform: translateX(5px); filter: hue-rotate(90deg); }
+  15% { opacity: 0.5; transform: translateX(-3px) skewX(-2deg); clip-path: inset(30% 0 20% 0); }
+  30% { opacity: 0.7; transform: translateX(2px) skewX(1deg); clip-path: inset(10% 0 40% 0); }
+  50% { opacity: 0.9; transform: translateX(-1px); filter: hue-rotate(-45deg); clip-path: none; }
+  100% { opacity: 1; transform: none; filter: none; }
 }
 
 /* Utility */

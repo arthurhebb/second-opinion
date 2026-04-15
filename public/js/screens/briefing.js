@@ -2,11 +2,16 @@ import { navigateTo } from '../app.js';
 import { typewriterEffect } from '../components/terminal.js';
 import { renderConfidenceSlider } from '../components/confidence.js';
 import { renderPatientSprite } from '../components/patient-sprite.js';
+import { startTimer, createTimerDisplay } from '../components/game-timer.js';
 import state from '../state.js';
 
 export function renderBriefing() {
   const screen = document.createElement('div');
   const caseData = state.caseData;
+
+  // Start the game timer
+  startTimer();
+  screen.appendChild(createTimerDisplay());
 
   const briefingContainer = document.createElement('div');
   briefingContainer.className = 'briefing-container';
@@ -44,7 +49,7 @@ export function renderBriefing() {
   context.style.fontSize = '16px';
 
   const entryText = {
-    inheriting_case: `You are inheriting this case from ${caseData.previous_doctor.name} (${caseData.previous_doctor.grade}), who has gone off shift. It is now ${caseData.patient.current_time}. Read their notes carefully.`
+    inheriting_case: `You are inheriting this case from ${caseData.previous_doctor.name} (${caseData.previous_doctor.grade}), who has gone off shift. The patient was admitted at ${caseData.patient.admission_time} and it is now ${caseData.patient.current_time}. Read their notes carefully.`
   };
   context.textContent = entryText[caseData.meta.entry_type] || entryText.inheriting_case;
   rightSide.appendChild(context);
