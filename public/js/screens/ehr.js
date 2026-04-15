@@ -81,7 +81,7 @@ export function renderEHR() {
 
   // Submit verdict button (fixed bottom)
   const verdictBar = document.createElement('div');
-  verdictBar.style.cssText = 'position: fixed; bottom: 0; left: 0; right: 0; padding: 12px 20px; background: var(--bg); border-top: 1px solid var(--border-bright); z-index: 100; display: flex; justify-content: flex-end;';
+  verdictBar.style.cssText = 'position: fixed; bottom: 0; left: 0; right: 0; padding: 12px 20px; padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)); background: var(--bg); border-top: 1px solid var(--border-bright); z-index: 100; display: flex; justify-content: flex-end;';
 
   const verdictBtn = document.createElement('button');
   verdictBtn.className = 'btn btn-primary';

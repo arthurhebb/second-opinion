@@ -590,8 +590,8 @@
 /* ===== HELP BUTTON ===== */
 .help-btn {
   position: fixed;
-  bottom: 16px;
-  right: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  right: calc(16px + env(safe-area-inset-right, 0px));
   font-size: 14px !important;
   padding: 6px 14px !important;
   letter-spacing: 1px;
@@ -728,8 +728,8 @@
 /* ===== GAME TIMER ===== */
 .game-timer {
   position: fixed;
-  top: 10px;
-  right: 12px;
+  top: calc(10px + env(safe-area-inset-top, 0px));
+  right: calc(12px + env(safe-area-inset-right, 0px));
   font-family: var(--font-main);
   font-size: 20px;
   color: var(--green-dim);
@@ -753,8 +753,8 @@
 /* ===== MUTE BUTTON ===== */
 .mute-btn {
   position: fixed;
-  bottom: 16px;
-  left: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  left: calc(16px + env(safe-area-inset-left, 0px));
   font-size: 12px !important;
   padding: 4px 10px !important;
   letter-spacing: 1px;
@@ -764,7 +764,7 @@
 /* ===== DEMO BUTTON ===== */
 .demo-btn {
   position: fixed;
-  bottom: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
   left: 50%;
   transform: translateX(-50%);
   font-size: 12px !important;

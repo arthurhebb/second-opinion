@@ -1,5 +1,5 @@
 // Service Worker for Second Opinion PWA
-const CACHE_NAME = 'second-opinion-v1';
+const CACHE_NAME = 'second-opinion-v2';
 
 // Assets to cache on install (app shell)
 const SHELL_ASSETS = [
@@ -32,7 +32,9 @@ const SHELL_ASSETS = [
   '/js/components/game-timer.js',
   '/js/components/doctor-callback.js',
   '/js/components/bleeps.js',
-  '/manifest.json'
+  '/manifest.json',
+  '/assets/icon-192.png',
+  '/assets/icon-512.png'
 ];
 
 // Install — cache the app shell

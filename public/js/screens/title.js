@@ -281,7 +281,7 @@ async function launchCase(btn, gameMode, difficulty, daily = false, demo = false
 
   const loadingScreen = document.createElement('div');
   loadingScreen.className = 'screen screen-no-scroll';
-  loadingScreen.style.cssText = 'justify-content: center; align-items: center;';
+  loadingScreen.style.cssText = 'justify-content: center; align-items: center; background: var(--bg);';
 
   const terminal = document.createElement('div');
   terminal.className = 'loading-terminal';
