@@ -1,4 +1,4 @@
-import { navigateTo } from '../app.js';
+import { navigateTo, resetTransition } from '../app.js';
 import { startCase } from '../api.js';
 import { getPlayerName, setPlayerName, hasPlayerName } from '../player.js';
 import { initAudio, isMuted, toggleMute, sfxClick, sfxDailyChallenge, sfxNavigate, sfxTypewriter, sfxResultArrived } from '../audio.js';
@@ -359,6 +359,12 @@ async function launchCase(btn, gameMode, difficulty, daily = false, demo = false
 
     state.sessionId = sessionId;
     state.caseData = caseData;
+
+    // Clear the loading screen and navigate directly
+    const app = document.getElementById('app');
+    app.innerHTML = '';
+    app.classList.remove('fade-out', 'glitch-out');
+    resetTransition();
     navigateTo('briefing');
   } catch (err) {
     caseReady = true;

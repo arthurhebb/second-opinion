@@ -62,6 +62,10 @@ export function renderBriefing() {
   context.textContent = entryText[caseData.meta.entry_type] || entryText.inheriting_case;
   rightSide.appendChild(context);
 
+  // Apply modifier to notes text
+  let doctorNotes = caseData.previous_doctor.notes;
+  const mod = caseData.modifier?.id;
+
   // Doctor's notes with typewriter effect
   const notesSection = document.createElement('div');
   notesSection.className = 'briefing-notes';
@@ -88,10 +92,6 @@ export function renderBriefing() {
   briefingContainer.appendChild(bottomArea);
 
   screen.appendChild(briefingContainer);
-
-  // Apply modifier to notes text
-  let doctorNotes = caseData.previous_doctor.notes;
-  const mod = caseData.modifier?.id;
 
   if (mod === 'illegible_notes') {
     const sentences = doctorNotes.split('. ');

@@ -20,6 +20,10 @@ const screens = {
 
 let transitioning = false;
 
+export function resetTransition() {
+  transitioning = false;
+}
+
 export function navigateTo(screenName, data) {
   if (transitioning) return;
   // Stop bleeps when leaving EHR
