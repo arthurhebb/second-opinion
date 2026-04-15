@@ -291,10 +291,13 @@
   align-items: center;
   gap: 12px;
   margin: 6px 0;
+  max-width: 500px;
 }
 
 .confidence-bar-label {
+  width: 140px;
   min-width: 140px;
+  flex-shrink: 0;
   font-size: 15px;
   opacity: 0.7;
 }
@@ -308,7 +311,9 @@
 
 .confidence-bar-value {
   font-size: 18px;
+  width: 50px;
   min-width: 50px;
+  flex-shrink: 0;
 }
 
 .teaching-point {
@@ -596,6 +601,53 @@
   padding: 6px 14px !important;
   letter-spacing: 1px;
   z-index: 50;
+}
+
+/* ===== CASE LIBRARY ===== */
+.case-entry {
+  border: 1px solid var(--border);
+  margin-bottom: 8px;
+}
+
+.case-entry-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  font-size: 15px;
+  transition: background 0.15s;
+}
+
+.case-entry-header:hover {
+  background: var(--green-faint);
+}
+
+.case-entry-open {
+  border-color: var(--green-dim);
+}
+
+.case-entry-detail {
+  padding: 12px 14px;
+  border-top: 1px solid var(--border);
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.case-detail-section {
+  margin-bottom: 10px;
+}
+
+@media (max-width: 600px) {
+  .case-entry-header {
+    font-size: 13px;
+    gap: 6px;
+    padding: 8px 10px;
+  }
+
+  .case-entry-detail {
+    font-size: 14px;
+    padding: 10px;
+  }
 }
 
 /* ===== BLEEP NOTIFICATIONS ===== */

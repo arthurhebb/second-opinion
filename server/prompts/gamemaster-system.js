@@ -93,6 +93,44 @@ The game is currently too easy. Follow these rules strictly to create genuinely 
 - Example: "Lactate 3.8 — likely secondary to dehydration and poor oral intake" (sounds reasonable, actually suggests sepsis)
 - The notes should make the player WANT to agree with the doctor
 
+### Past Medical History
+- Include 5-7 items in past_medical, NOT all relevant to the case
+- Add realistic noise: old surgeries (appendicectomy, knee replacement), minor conditions (hay fever, eczema, GORD), screening findings (raised cholesterol)
+- At least 2 items should be completely irrelevant to the diagnosis — real patients have messy histories
+- The relevant PMH items should be mixed in, not listed first
+
+### Medications
+- Medications MUST logically match the past medical history — every condition in PMH should have appropriate medication
+- If they have hypertension → include an antihypertensive (ramipril, amlodipine, etc.)
+- If they have diabetes → include metformin/gliclazide/insulin
+- If they have high cholesterol → include a statin
+- Include realistic PRN medications (paracetamol, gaviscon, etc.)
+- If a medication is missing for a listed condition, that should be deliberate and clinically significant
+
+### Social History
+- Make social history SPECIFIC and VARIED — not just "lives alone, independent"
+- Include realistic details: occupation (or retired from what), who they live with, how they spend their days
+- Vary it: lives with spouse, lives in sheltered housing, recently moved in with daughter, carer visits twice daily
+- Include relevant lifestyle: smoker/ex-smoker (how many, how long), alcohol intake (units per week), exercise level
+- Social history should occasionally be relevant to the case (e.g. recent long-haul flight for PE, works in a school for meningitis exposure)
+
+### Patient Names & Demographics
+- Use diverse, British-realistic names reflecting the UK population: South Asian (Priya Sharma, Mohammed Khan), Caribbean (Denise Campbell, Marcus Williams), Eastern European (Ewa Kowalski, Andrei Petrov), Chinese (Mei Chen, David Wong), African (Adaeze Okafor, Samuel Mensah), as well as traditional British names
+- Vary ages realistically for each condition — don't always default to elderly patients
+
+### Allergies
+- Do NOT always use "NKDA" — vary it realistically
+- About 30% of cases should have a genuine drug allergy (penicillin, NSAIDs, codeine, sulfonamides, latex)
+- When clinically relevant (e.g. the doctor prescribed something the patient is allergic to, or the allergy limits treatment options), the allergy should be part of the case's challenge
+- When not relevant, it's just realistic background detail
+
+### Systems Review
+- Include BOTH positive and negative findings in the systems review
+- Negatives are important: "denies chest pain", "no breathlessness", "no urinary symptoms", "no recent weight loss"
+- Include at least 3-4 negative findings alongside the positives
+- Some negatives should be clinically significant (e.g. "denies haemoptysis" in a PE case — absence of a symptom doesn't rule it out)
+- Negatives can also mislead — the patient may deny symptoms they're actually experiencing
+
 ### Blood Results
 - NOT every abnormal result should point to the missed diagnosis — include abnormals that support the WRONG diagnosis too
 - Include at least 2-3 results that are abnormal but genuinely explainable by the doctor's (incorrect) diagnosis
@@ -169,6 +207,10 @@ Return ONLY valid JSON matching this exact structure:
     "orderable": {
       "investigation_key": { "label": "...", "result": "... or {...}", "delay_ms": number }
     },
+    // CRITICAL: Every orderable investigation MUST have a complete, detailed result — NEVER "Pending", "Awaiting results", "Not yet available", or similar.
+    // The result should be the actual clinical finding, as if the test has been done and reported.
+    // Each result should be clinically relevant to the case — either supporting the correct diagnosis, supporting the wrong diagnosis (red herring), or ruling something out.
+    // Include at least 3 orderable investigations: chest_xray, blood_gas, and one more relevant to the case (e.g. CT head, urine culture, repeat bloods, lumbar puncture).
     "imaging_category": "pneumonia | pleural_effusion | pneumothorax | pulmonary_oedema | cardiomegaly | normal | null",
     "ecg_category": "normal | myocardial_infarction | abnormal_heartbeat | post_mi_history | null"
   },
@@ -185,7 +227,7 @@ Return ONLY valid JSON matching this exact structure:
   },
   "patient_agent_context": {
     "instructions": "...",
-    "personality": "...",
+    "personality": "Keep this varied and realistic — NOT every patient is anxious or scared. Some are stoic, some are irritable, some are chatty, some are quiet. Match the personality to the age and background.",
     "knowledge_boundary": "...",
     "withheld_info": []
   }

@@ -117,3 +117,68 @@ export function sfxSubmit() {
 export function sfxNavigate() {
   playTone(600, 0.04, 'square', 0.025);
 }
+
+// === AMBIENT HOSPITAL SOUND ===
+// Generates a low background hum with occasional soft beeps — like being on a quiet ward at night
+
+let ambientNodes = null;
+let ambientBeepInterval = null;
+
+export function startAmbient() {
+  if (muted || ambientNodes) return;
+  ensureCtx();
+
+  // Low background hum (filtered noise)
+  const bufferSize = ctx.sampleRate * 2;
+  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = (Math.random() * 2 - 1);
+  }
+
+  const noise = ctx.createBufferSource();
+  noise.buffer = buffer;
+  noise.loop = true;
+
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = 150;
+
+  const gain = ctx.createGain();
+  gain.gain.value = 0.008;
+
+  noise.connect(filter);
+  filter.connect(gain);
+  gain.connect(ctx.destination);
+  noise.start();
+
+  ambientNodes = { noise, filter, gain };
+
+  // Occasional distant beeps (every 8-15 seconds)
+  function scheduleBeep() {
+    if (muted || !ambientNodes) return;
+    const delay = 8000 + Math.random() * 7000;
+    ambientBeepInterval = setTimeout(() => {
+      if (muted || !ambientNodes) return;
+      // Soft distant monitor beep
+      playTone(1000, 0.05, 'sine', 0.01);
+      if (Math.random() > 0.6) {
+        // Sometimes a double beep
+        playTone(1000, 0.05, 'sine', 0.01, 0.12);
+      }
+      scheduleBeep();
+    }, delay);
+  }
+  scheduleBeep();
+}
+
+export function stopAmbient() {
+  if (ambientNodes) {
+    try { ambientNodes.noise.stop(); } catch {}
+    ambientNodes = null;
+  }
+  if (ambientBeepInterval) {
+    clearTimeout(ambientBeepInterval);
+    ambientBeepInterval = null;
+  }
+}

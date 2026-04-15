@@ -117,10 +117,19 @@ router.post('/:sessionId/investigate', (req, res) => {
 
   session.investigationsOrdered.push(investigation);
 
+  // Guard against empty/pending results
+  let result = orderable.result;
+  if (typeof result === 'string') {
+    const lower = result.toLowerCase().trim();
+    if (!lower || lower === 'pending' || lower === 'awaiting results' || lower === 'not yet available' || lower === 'results pending') {
+      result = 'No significant abnormality detected.';
+    }
+  }
+
   res.json({
     investigation,
     label: orderable.label,
-    result: orderable.result,
+    result,
     delay_ms: orderable.delay_ms
   });
 });

@@ -209,6 +209,14 @@ function renderMainMenu(container) {
   statsBtn.textContent = 'SCOREBOARD';
   statsBtn.addEventListener('click', () => { sfxNavigate(); navigateTo('stats'); });
   container.appendChild(statsBtn);
+
+  // Case Library
+  const libraryBtn = document.createElement('button');
+  libraryBtn.className = 'btn text-dim';
+  libraryBtn.style.cssText = 'font-size: 16px; padding: 8px 24px; width: 100%;';
+  libraryBtn.textContent = 'CASE LIBRARY';
+  libraryBtn.addEventListener('click', () => { sfxNavigate(); navigateTo('caseLibrary'); });
+  container.appendChild(libraryBtn);
 }
 
 function renderDifficultyPicker(container) {

@@ -6,7 +6,9 @@ import { renderVerdict } from './screens/verdict.js';
 import { renderReveal } from './screens/reveal.js';
 import { renderStats } from './screens/stats.js';
 import { renderInstructions } from './screens/instructions.js';
+import { renderCaseLibrary } from './screens/case-library.js';
 import { stopBleeps } from './components/bleeps.js';
+import { stopAmbient } from './audio.js';
 
 const screens = {
   title: renderTitle,
@@ -15,7 +17,8 @@ const screens = {
   verdict: renderVerdict,
   reveal: renderReveal,
   stats: renderStats,
-  instructions: renderInstructions
+  instructions: renderInstructions,
+  caseLibrary: renderCaseLibrary
 };
 
 let transitioning = false;
@@ -26,8 +29,8 @@ export function resetTransition() {
 
 export function navigateTo(screenName, data) {
   if (transitioning) return;
-  // Stop bleeps when leaving EHR
-  if (screenName !== 'ehr') stopBleeps();
+  // Stop bleeps and ambient when leaving EHR
+  if (screenName !== 'ehr') { stopBleeps(); stopAmbient(); }
   state.currentScreen = screenName;
   const app = document.getElementById('app');
   const useGlitch = screenName === 'reveal';

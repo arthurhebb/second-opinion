@@ -1,11 +1,19 @@
 import { navigateTo } from '../app.js';
-import { submitVerdict, submitToLeaderboard } from '../api.js';
+import { submitVerdict, submitToLeaderboard, saveCaseHistory } from '../api.js';
 import { renderPatientSprite } from '../components/patient-sprite.js';
 import { recordGame, getRank } from '../scoreboard.js';
 import { getPlayerName } from '../player.js';
 import { sfxCorrect, sfxWrong, sfxSubmit, sfxStreak } from '../audio.js';
 import { createTimerDisplay, stopTimer, getElapsedFormatted } from '../components/game-timer.js';
 import state, { addConfidenceRating } from '../state.js';
+
+function showScorePop(text, isCorrect) {
+  const pop = document.createElement('div');
+  pop.className = `score-pop ${isCorrect ? 'correct' : 'wrong'}`;
+  pop.textContent = text;
+  document.body.appendChild(pop);
+  setTimeout(() => pop.remove(), 1300);
+}
 
 export function renderVerdict() {
   if (state.gameMode === 'easy') {
@@ -266,7 +274,19 @@ function renderEasyVerdict() {
           daily: state.isDaily || false,
           correct: isCorrect,
           bias: result.reveal?.cognitive_bias_planted || null
-        }).catch(() => { /* non-critical */ });
+        }).catch(() => {});
+
+        saveCaseHistory({
+          name: playerName,
+          condition: result.reveal?.actual_diagnosis || 'Unknown',
+          correct: isCorrect,
+          score: gameResult.score,
+          difficulty: state.caseData?.meta?.difficulty?.presentation_clarity || 'moderate',
+          confidence_verdict: parseInt(slider.value),
+          time_taken: finalTime,
+          reveal_data: result.reveal,
+          withheld_info: state.withheldInfo || []
+        }).catch(() => {});
       }
 
       // Disable all option buttons and highlight correct/incorrect
@@ -289,12 +309,18 @@ function renderEasyVerdict() {
       // Hide confidence slider
       confGroup.style.display = 'none';
 
-      // Sound effects
+      // Sound effects + visual juice
       if (isCorrect) {
         sfxCorrect();
         if (gameResult.streak >= 3) setTimeout(() => sfxStreak(gameResult.streak), 400);
+        showScorePop(`+${gameResult.score}`, true);
       } else {
         sfxWrong();
+        showScorePop(gameResult.score > 0 ? `+${gameResult.score}` : '0', false);
+        // Screen shake
+        const app = document.getElementById('app');
+        app.classList.add('screen-shake');
+        setTimeout(() => app.classList.remove('screen-shake'), 300);
       }
 
       // Show feedback message
@@ -425,6 +451,18 @@ async function doSubmit(btn, verdictData) {
         daily: state.isDaily || false,
         correct,
         bias: reveal?.cognitive_bias_planted || null
+      }).catch(() => {});
+
+      saveCaseHistory({
+        name: playerNameMed,
+        condition: reveal?.actual_diagnosis || 'Unknown',
+        correct,
+        score: 0,
+        difficulty: state.caseData?.meta?.difficulty?.presentation_clarity || 'moderate',
+        confidence_verdict: verdictData.confidence,
+        time_taken: null,
+        reveal_data: reveal,
+        withheld_info: state.withheldInfo || []
       }).catch(() => {});
     }
 

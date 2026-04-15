@@ -6,7 +6,7 @@ import { renderObsTimeline } from '../components/obs-chart.js';
 import { renderBloodsTable, renderABGTable } from '../components/bloods-table.js';
 import { renderChatPanel } from '../components/chat-panel.js';
 import { renderPatientSprite } from '../components/patient-sprite.js';
-import { sfxInvestigationOrder, sfxResultArrived, sfxNavigate } from '../audio.js';
+import { sfxInvestigationOrder, sfxResultArrived, sfxNavigate, startAmbient, stopAmbient } from '../audio.js';
 import { createTimerDisplay } from '../components/game-timer.js';
 import { scheduleDoctorCallback } from '../components/doctor-callback.js';
 import { startBleeps, stopBleeps } from '../components/bleeps.js';
@@ -18,9 +18,10 @@ export function renderEHR() {
   // Timer
   screen.appendChild(createTimerDisplay());
 
-  // Schedule doctor callback and bleeps
+  // Schedule doctor callback, bleeps, and ambient sound
   scheduleDoctorCallback(caseData);
   startBleeps();
+  startAmbient();
 
   // Modifier banner
   if (caseData.modifier) {

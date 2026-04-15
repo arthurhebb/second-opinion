@@ -64,6 +64,20 @@ export async function getAnalytics() {
   return res.json();
 }
 
+export async function saveCaseHistory({ name, condition, correct, score, difficulty, confidence_verdict, time_taken, reveal_data, withheld_info }) {
+  const res = await fetch(`${API_BASE}/case-history`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, condition, correct, score, difficulty, confidence_verdict, time_taken, reveal_data, withheld_info })
+  });
+  return res.json();
+}
+
+export async function getCaseHistory(name) {
+  const res = await fetch(`${API_BASE}/case-history/${encodeURIComponent(name)}`);
+  return res.json();
+}
+
 export async function streamChat(sessionId, message, onChunk, onDone) {
   const res = await fetch(`${API_BASE}/chat`, {
     method: 'POST',

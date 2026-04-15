@@ -254,17 +254,28 @@ html, body {
   align-items: center;
   gap: 12px;
   margin: 12px 0;
-  max-width: 500px;
+  width: 350px;
+  max-width: 100%;
 }
 
 .slider {
   -webkit-appearance: none;
   appearance: none;
-  width: 100%;
+  width: 250px;
+  flex-shrink: 0;
   height: 4px;
   background: var(--green-faint);
   border-radius: 0;
   outline: none;
+}
+
+@media (max-width: 600px) {
+  .slider-container {
+    width: 100%;
+  }
+  .slider {
+    width: 180px;
+  }
 }
 
 .slider::-webkit-slider-thumb {
@@ -297,6 +308,67 @@ html, body {
 ::-webkit-scrollbar-thumb {
   background: var(--green-dark);
   border: 1px solid var(--green-faint);
+}
+
+/* Score pop animation */
+.score-pop {
+  position: fixed;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 48px;
+  font-family: var(--font-main);
+  letter-spacing: 4px;
+  z-index: 10001;
+  pointer-events: none;
+  animation: scorePop 1.2s ease-out forwards;
+}
+
+.score-pop.correct {
+  color: var(--green);
+  text-shadow: 0 0 15px var(--green), 0 0 30px var(--green-faint);
+}
+
+.score-pop.wrong {
+  color: var(--red);
+  text-shadow: 0 0 15px rgba(255, 51, 51, 0.5);
+}
+
+@keyframes scorePop {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+  15% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+  30% { transform: translate(-50%, -50%) scale(1); }
+  70% { opacity: 1; transform: translate(-50%, -60%); }
+  100% { opacity: 0; transform: translate(-50%, -80%); }
+}
+
+/* Screen shake on wrong answer */
+.screen-shake {
+  animation: shake 0.3s ease-out;
+}
+
+@keyframes shake {
+  0% { transform: translateX(0); }
+  15% { transform: translateX(-4px); }
+  30% { transform: translateX(3px); }
+  45% { transform: translateX(-2px); }
+  60% { transform: translateX(2px); }
+  75% { transform: translateX(-1px); }
+  100% { transform: translateX(0); }
+}
+
+/* CRT screen flicker — random subtle glitch */
+#app {
+  animation: crtFlicker 60s infinite;
+}
+
+@keyframes crtFlicker {
+  0%, 100% { opacity: 1; }
+  97% { opacity: 1; }
+  97.5% { opacity: 0.85; transform: translateX(1px); }
+  98% { opacity: 1; transform: none; }
+  98.3% { opacity: 0.9; }
+  98.5% { opacity: 1; }
 }
 
 /* Screen transitions */

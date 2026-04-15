@@ -174,6 +174,48 @@ app.get('/api/analytics', async (req, res) => {
   }
 });
 
+// Case history — save completed cases for the case library
+app.post('/api/case-history', async (req, res) => {
+  const { name, condition, correct, score, difficulty, confidence_verdict, time_taken, reveal_data, withheld_info } = req.body;
+  if (!name) return res.status(400).json({ error: 'Name required' });
+
+  try {
+    const { error } = await supabase.from('case_history').insert({
+      name: String(name).slice(0, 20),
+      condition: condition || 'Unknown',
+      correct: correct || false,
+      score: score || 0,
+      difficulty: difficulty || 'moderate',
+      confidence_verdict: confidence_verdict ?? null,
+      time_taken: time_taken || null,
+      reveal_data: reveal_data || null,
+      withheld_info: withheld_info || null
+    });
+    if (error) throw error;
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Case history insert error:', err);
+    res.json({ ok: false });
+  }
+});
+
+// Get case history for a player
+app.get('/api/case-history/:name', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('case_history')
+      .select('*')
+      .eq('name', req.params.name)
+      .order('created_at', { ascending: false })
+      .limit(50);
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    console.error('Case history fetch error:', err);
+    res.json([]);
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Second Opinion running on http://localhost:${PORT}`);
 });
