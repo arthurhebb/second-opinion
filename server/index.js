@@ -41,10 +41,11 @@ app.get('/api/imaging/:type/:category', (req, res) => {
 
 // Supabase client for persistent leaderboard
 import { createClient } from '@supabase/supabase-js';
-const supabase = createClient(
-  process.env.SUPABASE_URL || 'https://hgszupfqsnjzemmhipez.supabase.co',
-  process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhnc3p1cGZxc25qemVtbWhpcGV6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNzkwNjAsImV4cCI6MjA5MTg1NTA2MH0.FHdGO9CyuZRT791-Heqkq7oPGzyrsefpqDOZ04r97Xw'
-);
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://hgszupfqsnjzemmhipez.supabase.co';
+const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhnc3p1cGZxc25qemVtbWhpcGV6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNzkwNjAsImV4cCI6MjA5MTg1NTA2MH0.FHdGO9CyuZRT791-Heqkq7oPGzyrsefpqDOZ04r97Xw';
+console.log('Supabase URL:', SUPABASE_URL);
+console.log('Supabase key ends:', SUPABASE_KEY.slice(-10));
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // GET leaderboard
 app.get('/api/leaderboard', async (req, res) => {
