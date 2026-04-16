@@ -60,6 +60,19 @@ ${guidelineText ? `## Guideline Reference\n${guidelineText}` : ''}
     "imaging_category": "...", "ecg_category": "..."
   },
   "hidden": { "actual_diagnosis": "...", "previous_doctor_error": "...", "cognitive_bias_planted": "...", "bias_explanation": "...", "red_herrings": ["..."], "fork_in_the_road": "...", "ideal_management": "...", "teaching_points": ["..."], "doctor_was_correct": ${doctorCorrect}${easyMode ? ', "multiple_choice": { "question": "...", "options": [{"id":"A","text":"...","correct":false},...] }' : ''} },
-  "patient_agent_context": { "instructions": "...", "personality": "...", "knowledge_boundary": "...", "withheld_info": [] }
-}`;
+  "patient_agent_context": { "instructions": "...", "personality": "...", "knowledge_boundary": "...", "withheld_info": [] },
+  "suggested_questions": {
+    "symptoms": ["3 case-specific questions about symptoms a doctor would ask this patient"],
+    "history": ["3 case-specific questions about past history relevant to this presentation"],
+    "medications": ["3 case-specific questions about medications relevant to this case"],
+    "social": ["3 case-specific questions about social/lifestyle factors relevant to this case"]
+  }
+}
+// suggested_questions rules:
+// - Each category gets exactly 3 questions, written as the player would ask them (plain English)
+// - Questions should mirror what a real doctor would ask when taking a history for this presentation
+// - At least one question per category should be genuinely useful for reaching the correct diagnosis
+// - Include 1-2 questions that sound useful but lead toward the wrong diagnosis (red herrings)
+// - If withheld_info exists, one question in the relevant category should be likely to trigger the reveal — but not too obvious
+// - Questions should feel natural, not clinical: "Have you felt worse since the first doctor saw you?" not "Describe any interval deterioration"`;
 }

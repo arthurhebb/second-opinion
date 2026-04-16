@@ -2,40 +2,31 @@ import { streamChat } from '../api.js';
 import { getSpriteFilename } from '../components/patient-sprite.js';
 import state from '../state.js';
 
-const CATEGORIES = {
-  symptoms: {
-    label: 'Symptoms',
-    questions: [
-      'When exactly did this start?',
-      'Has it changed since you arrived?',
-      'Is there anything that makes it better or worse?'
-    ]
-  },
-  history: {
-    label: 'History',
-    questions: [
-      'Has anything like this happened before?',
-      'Have you been in hospital recently?',
-      'Any conditions you haven\'t mentioned?'
-    ]
-  },
-  medications: {
-    label: 'Medications',
-    questions: [
-      'Are you taking everything as prescribed?',
-      'Any new medications recently?',
-      'Have you taken anything yourself before coming in?'
-    ]
-  },
-  social: {
-    label: 'Social',
-    questions: [
-      'Do you live alone?',
-      'Have you travelled recently?',
-      'Does anyone at home have similar symptoms?'
-    ]
-  }
+const FALLBACK_QUESTIONS = {
+  symptoms: ['When exactly did this start?', 'Has it changed since you arrived?', 'Is there anything that makes it better or worse?'],
+  history: ['Has anything like this happened before?', 'Have you been in hospital recently?', 'Any conditions you haven\'t mentioned?'],
+  medications: ['Are you taking everything as prescribed?', 'Any new medications recently?', 'Have you taken anything yourself before coming in?'],
+  social: ['Who do you live with?', 'Have you travelled recently?', 'Does anyone at home have similar symptoms?']
 };
+
+const CATEGORY_LABELS = {
+  symptoms: 'Symptoms',
+  history: 'History',
+  medications: 'Medications',
+  social: 'Social'
+};
+
+function getQuestions(caseData) {
+  const dynamic = caseData?.suggested_questions;
+  const categories = {};
+  for (const key of Object.keys(CATEGORY_LABELS)) {
+    categories[key] = {
+      label: CATEGORY_LABELS[key],
+      questions: (dynamic && dynamic[key] && dynamic[key].length > 0) ? dynamic[key] : FALLBACK_QUESTIONS[key]
+    };
+  }
+  return categories;
+}
 
 export function renderChatPanel() {
   const container = document.createElement('div');
@@ -64,13 +55,15 @@ export function renderChatPanel() {
   }
 
   // Category buttons + suggested questions for all difficulties
+  const categories = getQuestions(state.caseData);
+
   const categoryRow = document.createElement('div');
   categoryRow.className = 'chat-categories';
 
   const suggestionsArea = document.createElement('div');
   suggestionsArea.className = 'chat-suggestions';
 
-  for (const [key, cat] of Object.entries(CATEGORIES)) {
+  for (const [key, cat] of Object.entries(categories)) {
     const btn = document.createElement('button');
     btn.className = 'btn chat-category-btn';
     btn.textContent = cat.label;
