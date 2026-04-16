@@ -101,23 +101,34 @@ export function renderABGTable(results) {
   const tbody = document.createElement('tbody');
   for (const [test, data] of Object.entries(results)) {
     const tr = document.createElement('tr');
-    const flagClass = data.flag === 'NORMAL' ? 'flag-normal' : 'flag-high';
     const displayName = test.replace(/_/g, ' ');
 
-    if (isEasy) {
-      const statusText = data.flag === 'NORMAL' ? 'Normal' : data.flag === 'HIGH' ? 'Too High' : 'Too Low';
-      tr.innerHTML = `
-        <td>${displayName}</td>
-        <td class="${flagClass}">${data.value}</td>
-        <td class="text-dim">${data.range}</td>
-        <td class="${flagClass}">${statusText}</td>
-      `;
+    // Handle both object format {value, range, flag} and flat values
+    if (typeof data === 'object' && data !== null && 'value' in data) {
+      const flagClass = data.flag === 'NORMAL' ? 'flag-normal' : 'flag-high';
+      if (isEasy) {
+        const statusText = data.flag === 'NORMAL' ? 'Normal' : data.flag === 'HIGH' ? 'Too High' : 'Too Low';
+        tr.innerHTML = `
+          <td>${displayName}</td>
+          <td class="${flagClass}">${data.value}</td>
+          <td class="text-dim">${data.range || ''}</td>
+          <td class="${flagClass}">${statusText}</td>
+        `;
+      } else {
+        tr.innerHTML = `
+          <td>${displayName}</td>
+          <td class="${flagClass}">${data.value}</td>
+          <td class="text-dim">${data.range || ''}</td>
+          <td class="${flagClass}">${data.flag !== 'NORMAL' ? data.flag : ''}</td>
+        `;
+      }
     } else {
+      // Flat value — just display it
       tr.innerHTML = `
         <td>${displayName}</td>
-        <td class="${flagClass}">${data.value}</td>
-        <td class="text-dim">${data.range}</td>
-        <td class="${flagClass}">${data.flag !== 'NORMAL' ? data.flag : ''}</td>
+        <td>${data}</td>
+        <td class="text-dim">—</td>
+        <td>—</td>
       `;
     }
     tbody.appendChild(tr);

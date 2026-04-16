@@ -1,49 +1,9 @@
 // Service Worker for Second Opinion PWA
-const CACHE_NAME = 'second-opinion-v2';
+// Network-first strategy — always serves latest code, cache is offline fallback only
+const CACHE_NAME = 'second-opinion-v3';
 
-// Assets to cache on install (app shell)
-const SHELL_ASSETS = [
-  '/',
-  '/index.html',
-  '/css/reset.css',
-  '/css/retro.css',
-  '/css/components.css',
-  '/js/app.js',
-  '/js/api.js',
-  '/js/state.js',
-  '/js/audio.js',
-  '/js/player.js',
-  '/js/scoreboard.js',
-  '/js/screens/title.js',
-  '/js/screens/briefing.js',
-  '/js/screens/ehr.js',
-  '/js/screens/verdict.js',
-  '/js/screens/reveal.js',
-  '/js/screens/stats.js',
-  '/js/screens/instructions.js',
-  '/js/components/terminal.js',
-  '/js/components/patient-sprite.js',
-  '/js/components/chat-panel.js',
-  '/js/components/notes-viewer.js',
-  '/js/components/obs-chart.js',
-  '/js/components/bloods-table.js',
-  '/js/components/confidence.js',
-  '/js/components/glossary.js',
-  '/js/components/game-timer.js',
-  '/js/components/doctor-callback.js',
-  '/js/components/bleeps.js',
-  '/manifest.json',
-  '/assets/icon-192.png',
-  '/assets/icon-512.png'
-];
-
-// Install — cache the app shell
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(SHELL_ASSETS);
-    })
-  );
+// Install — skip waiting to activate immediately
+self.addEventListener('install', () => {
   self.skipWaiting();
 });
 
@@ -59,7 +19,7 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch — network first for API calls, cache first for assets
+// Fetch — network first, cache fallback
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
@@ -69,18 +29,20 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Cache first for everything else, fall back to network
+  // Network first for everything else
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(event.request).then((response) => {
-        // Cache successful responses for next time
+    fetch(event.request)
+      .then((response) => {
+        // Cache successful responses for offline use
         if (response.ok) {
           const clone = response.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
         }
         return response;
-      });
-    })
+      })
+      .catch(() => {
+        // Offline — try cache
+        return caches.match(event.request);
+      })
   );
 });

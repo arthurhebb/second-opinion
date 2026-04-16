@@ -148,7 +148,8 @@ function renderInvestigationResult(key, data, resultsArea) {
   const headerText = `${data.label} — RESULTS`;
   const timeText = `Reported at ${data.reportedTime || getReportedTime()}`;
 
-  if (key === 'blood_gas' && typeof data.result === 'object') {
+  const isABG = (key === 'blood_gas' || key === 'arterial_blood_gas' || key === 'abg') && typeof data.result === 'object';
+  if (isABG) {
     resultPanel.innerHTML = `
       <div class="panel-header">${headerText}</div>
       <div class="text-dim" style="font-size: 13px; margin-bottom: 8px;">${timeText}</div>

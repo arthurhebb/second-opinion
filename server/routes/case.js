@@ -74,6 +74,18 @@ router.post('/start', async (req, res) => {
     fullCase = demoCases[0];
   }
 
+  // Shuffle multiple choice options so correct answer isn't always in the same position
+  if (fullCase.hidden?.multiple_choice?.options) {
+    const opts = fullCase.hidden.multiple_choice.options;
+    for (let i = opts.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [opts[i], opts[j]] = [opts[j], opts[i]];
+    }
+    // Re-assign IDs after shuffle
+    const ids = ['A', 'B', 'C', 'D', 'E'];
+    opts.forEach((opt, i) => { opt.id = ids[i]; });
+  }
+
   // Roll for a modifier
   const modifier = rollModifier(req.body.daily || false);
 
