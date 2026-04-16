@@ -245,9 +245,10 @@ function renderInvestigationsTab(caseData) {
         const resultData = { label: result.label, result: result.result, imageUrl: null, reportedTime: getReportedTime() };
 
         // Fetch X-ray image if applicable
-        if (key === 'chest_xray' && caseData.investigations.imaging_category) {
+        if (key === 'chest_xray' || key === 'chest_x_ray' || key === 'cxr') {
           try {
-            const imgRes = await fetch(`/api/imaging/xray/${caseData.investigations.imaging_category}`);
+            const imgCategory = caseData.investigations.imaging_category || 'normal';
+            const imgRes = await fetch(`/api/imaging/xray/${imgCategory}`);
             const imgData = await imgRes.json();
             if (imgData.url) resultData.imageUrl = imgData.url;
           } catch (e) { /* fall back to text-only */ }

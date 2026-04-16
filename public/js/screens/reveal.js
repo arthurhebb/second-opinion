@@ -52,9 +52,14 @@ export function renderReveal() {
   // What was missed (or confirmation doctor was right)
   const missedSection = document.createElement('div');
   missedSection.className = 'reveal-section';
+  const missedText = reveal.previous_doctor_error && reveal.previous_doctor_error.toLowerCase() !== 'none'
+    ? reveal.previous_doctor_error
+    : doctorWasCorrect
+      ? 'The previous doctor\'s assessment was correct. Their diagnosis and management plan were appropriate for this presentation.'
+      : 'The previous doctor\'s error is described in the cognitive bias section below.';
   missedSection.innerHTML = `
     <h3>${doctorWasCorrect ? 'Previous Doctor\'s Assessment' : 'What Was Missed'}</h3>
-    <div>${reveal.previous_doctor_error}</div>
+    <div>${missedText}</div>
   `;
   container.appendChild(missedSection);
 

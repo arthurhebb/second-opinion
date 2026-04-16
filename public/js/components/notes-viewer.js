@@ -97,8 +97,8 @@ export function renderNotesViewer(caseData) {
   avail.innerHTML = availHTML;
 
   // Show ECG image if category is specified
-  const ecgCat = caseData.investigations.ecg_category;
-  if (ecgCat) {
+  const ecgCat = caseData.investigations.ecg_category || 'normal';
+  {
     // ECG interpretation hint (all difficulties)
     const ecgHints = {
       normal: 'This ECG looks normal — regular rhythm, no obvious abnormalities.',
