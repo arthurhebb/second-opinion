@@ -52,6 +52,24 @@ function renderMedicalVerdict() {
   title.textContent = 'Submit Your Assessment';
   form.appendChild(title);
 
+  // Reminder of doctor's assessment
+  const doctorNoteMed = state.caseData?.previous_doctor;
+  if (doctorNoteMed) {
+    const reminderMed = document.createElement('div');
+    reminderMed.className = 'text-dim text-center mb-2';
+    reminderMed.style.cssText = 'font-size: 15px; border: 1px solid var(--border); padding: 8px 12px;';
+    let impressionMed = doctorNoteMed.notes;
+    const impMatchMed = impressionMed.match(/[Ii]mpression[:\s]+([^.]+)/);
+    if (impMatchMed) {
+      impressionMed = impMatchMed[1].trim();
+    } else {
+      const sentencesMed = impressionMed.split(/\.\s+/).filter(s => s.trim().length > 10);
+      impressionMed = sentencesMed.length > 0 ? sentencesMed[sentencesMed.length - 1].trim() : impressionMed.slice(0, 100);
+    }
+    reminderMed.innerHTML = `<span style="color: var(--amber);">${doctorNoteMed.name}'s assessment:</span> ${impressionMed}`;
+    form.appendChild(reminderMed);
+  }
+
   // Diagnosis input
   const diagGroup = document.createElement('div');
   diagGroup.className = 'form-group';
@@ -167,9 +185,29 @@ function renderEasyVerdict() {
   form.appendChild(title);
 
   const subtitle = document.createElement('div');
-  subtitle.className = 'text-dim text-center mb-2';
+  subtitle.className = 'text-dim text-center mb-1';
   subtitle.textContent = 'Pick the answer you think is right. The previous doctor might have got it right — or they might have missed something.';
   form.appendChild(subtitle);
+
+  // Reminder of doctor's assessment
+  const doctorNote = state.caseData?.previous_doctor;
+  if (doctorNote) {
+    const reminder = document.createElement('div');
+    reminder.className = 'text-dim text-center mb-2';
+    reminder.style.cssText = 'font-size: 15px; border: 1px solid var(--border); padding: 8px 12px;';
+    // Extract the impression/diagnosis from the doctor's notes (usually after "Impression:" or last sentence)
+    let impression = doctorNote.notes;
+    const impMatch = impression.match(/[Ii]mpression[:\s]+([^.]+)/);
+    if (impMatch) {
+      impression = impMatch[1].trim();
+    } else {
+      // Take last meaningful sentence
+      const sentences = impression.split(/\.\s+/).filter(s => s.trim().length > 10);
+      impression = sentences.length > 0 ? sentences[sentences.length - 1].trim() : impression.slice(0, 100);
+    }
+    reminder.innerHTML = `<span style="color: var(--amber);">${doctorNote.name}'s assessment:</span> ${impression}`;
+    form.appendChild(reminder);
+  }
 
   // Multiple choice options
   const choicesArea = document.createElement('div');

@@ -379,16 +379,44 @@ async function launchCase(btn, gameMode, difficulty, daily = false, demo = false
     clearInterval(msgInterval);
     console.error('Failed to start case:', err);
 
+    // Mark last line as failed
+    const dots = terminal.querySelectorAll('.loading-dots');
+    if (dots.length > 0) {
+      const lastDots = dots[dots.length - 1];
+      lastDots.classList.remove('loading-dots');
+      lastDots.textContent = ' FAILED';
+      lastDots.style.color = 'var(--red)';
+    }
+
     const errLine = document.createElement('div');
     errLine.className = 'loading-line';
     errLine.style.color = 'var(--red)';
     errLine.textContent = '> ERROR — CASE GENERATION FAILED';
     terminal.appendChild(errLine);
 
+    const btnRow = document.createElement('div');
+    btnRow.style.cssText = 'display: flex; gap: 8px; margin-top: 12px;';
+
     const retryBtn = document.createElement('button');
-    retryBtn.className = 'btn mt-2';
-    retryBtn.textContent = '< BACK TO MENU';
-    retryBtn.addEventListener('click', () => navigateTo('title'));
-    terminal.appendChild(retryBtn);
+    retryBtn.className = 'btn btn-primary';
+    retryBtn.textContent = 'RETRY';
+    retryBtn.addEventListener('click', () => {
+      const app = document.getElementById('app');
+      app.innerHTML = '';
+      resetTransition();
+      launchCase(retryBtn, gameMode, difficulty, daily, demo);
+    });
+    btnRow.appendChild(retryBtn);
+
+    const backBtn = document.createElement('button');
+    backBtn.className = 'btn text-dim';
+    backBtn.textContent = 'BACK TO MENU';
+    backBtn.addEventListener('click', () => {
+      resetTransition();
+      navigateTo('title');
+    });
+    btnRow.appendChild(backBtn);
+
+    terminal.appendChild(btnRow);
   }
 }
