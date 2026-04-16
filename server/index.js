@@ -49,15 +49,20 @@ const supabase = createClient(
 // GET leaderboard
 app.get('/api/leaderboard', async (req, res) => {
   try {
+    console.log('Fetching leaderboard from Supabase...');
     const { data, error } = await supabase
       .from('leaderboard')
       .select('*')
       .order('score', { ascending: false })
       .limit(500);
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase leaderboard error:', JSON.stringify(error));
+      throw error;
+    }
+    console.log('Leaderboard rows:', data?.length);
     res.json(data);
   } catch (err) {
-    console.error('Leaderboard fetch error:', err);
+    console.error('Leaderboard fetch error:', err.message || err);
     res.json([]);
   }
 });
